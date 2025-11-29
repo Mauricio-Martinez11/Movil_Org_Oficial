@@ -190,28 +190,28 @@ export default function EnvioScreen() {
       {/* Filtros para clientes */}
       <View style={tw`flex-row justify-center py-3 bg-white mb-px`}>
         <TouchableOpacity
-          style={tw`px-3 py-1.5 mx-1 ${filtroActual === 'curso' ? 'border border-[#0140CD] rounded-full' : ''}`}
+          style={tw`px-3 py-1.5 mx-1 ${filtroActual === 'curso' ? 'border border-[#212529] rounded-full' : ''}`}
           onPress={() => setFiltroActual('curso')}
         >
-          <Text style={tw`${filtroActual === 'curso' ? 'text-[#0140CD]' : 'text-gray-600'}`}>
+          <Text style={tw`${filtroActual === 'curso' ? 'text-[#212529]' : 'text-gray-600'}`}>
             En Curso
           </Text>
         </TouchableOpacity>
         
         <TouchableOpacity
-          style={tw`px-3 py-1.5 mx-1 ${filtroActual === 'anteriores' ? 'border border-[#0140CD] rounded-full' : ''}`}
+          style={tw`px-3 py-1.5 mx-1 ${filtroActual === 'anteriores' ? 'border border-[#212529] rounded-full' : ''}`}
           onPress={() => setFiltroActual('anteriores')}
         >
-          <Text style={tw`${filtroActual === 'anteriores' ? 'text-[#0140CD]' : 'text-gray-600'}`}>
+          <Text style={tw`${filtroActual === 'anteriores' ? 'text-[#212529]' : 'text-gray-600'}`}>
             Anteriores
           </Text>
         </TouchableOpacity>
         
         <TouchableOpacity
-          style={tw`px-3 py-1.5 mx-1 ${filtroActual === 'pendientes' ? 'border border-[#0140CD] rounded-full' : ''}`}
+          style={tw`px-3 py-1.5 mx-1 ${filtroActual === 'pendientes' ? 'border border-[#212529] rounded-full' : ''}`}
           onPress={() => setFiltroActual('pendientes')}
         >
-          <Text style={tw`${filtroActual === 'pendientes' ? 'text-[#0140CD]' : 'text-gray-600'}`}>
+          <Text style={tw`${filtroActual === 'pendientes' ? 'text-[#212529]' : 'text-gray-600'}`}>
             Pendientes
           </Text>
         </TouchableOpacity>

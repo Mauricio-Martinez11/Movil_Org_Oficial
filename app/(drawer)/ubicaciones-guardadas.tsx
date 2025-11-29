@@ -627,7 +627,7 @@ export default function UbicacionesGuardadasScreen() {
             setViewOnlyMap(false);
           }}
         >
-          <Ionicons name="arrow-back" size={28} color="#0140CD" />
+          <Ionicons name="arrow-back" size={28} color="#007bff" />
         </Pressable>
         {/* Botón Reiniciar y Ver mapa */}
         <View style={tw`absolute bottom-8 left-0 right-0 flex-row justify-center space-x-4`}>
@@ -670,10 +670,10 @@ export default function UbicacionesGuardadasScreen() {
         {/* Header con el logo original */}
         <View style={tw`flex-row items-center pt-14 px-4 pb-4 bg-white`}>
           <TouchableOpacity onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
-            <Ionicons name="menu" size={28} color="#0140CD" /> 
+            <Ionicons name="menu" size={28} color="#212529" /> 
           </TouchableOpacity>
           <View style={tw`flex-1 items-center`}>
-            <Text style={tw`text-xl font-bold text-[#0140CD]`}>
+            <Text style={tw`text-xl font-bold text-[#212529]`}>
               {editMode ? 'Editar dirección' : 'Nueva dirección'}
             </Text>
           </View>
@@ -697,14 +697,14 @@ export default function UbicacionesGuardadasScreen() {
               <View style={tw`mt-4 mb-4 mx-4 bg-white rounded-lg shadow-md overflow-hidden`}>
                 {/* Header explicativo */}
                 <View style={tw`p-5`}>
-                  <Text style={tw`mt-2 text-gray-700`}>
+                  <Text style={tw`mt-2 text-[#212529]`}>
                     {`Haz clic en el mapa para seleccionar el ${stage === 0 ? 'origen' : stage === 1 ? 'destino' : 'origen'}`}
                   </Text>
                 </View>
 
                 {/* Status message */}
-                <View style={tw`mx-5 my-2 bg-blue-50 p-3 rounded-md`}>
-                  <Text style={tw`text-center text-blue-600`}>
+                <View style={tw`mx-5 my-2 bg-gray-200 p-3 rounded-md`}>
+                  <Text style={tw`text-center text-[#212529]`}>
                     {successMessage ? successMessage :
                       stage === 0
                         ? 'Selecciona el punto de origen en el mapa'
@@ -864,7 +864,7 @@ export default function UbicacionesGuardadasScreen() {
                 <View style={tw`px-5 mb-5 items-center`}>
                   <Pressable
                     style={tw`${(origin && dest && nombreOrigen.trim() && nombreDestino.trim() && !loadingRoute)
-                      ? 'bg-[#0140CD]'
+                      ? 'bg-[#007bff]'
                       : 'bg-gray-400'} py-3 px-4 rounded-lg w-56`}
                     onPress={editMode ? actualizarDireccion : guardarDireccion}
                     disabled={!(origin && dest && nombreOrigen.trim() && nombreDestino.trim()) || loadingRoute}
@@ -904,10 +904,10 @@ export default function UbicacionesGuardadasScreen() {
       {/* Header con el logo original */}
       <View style={tw`flex-row items-center pt-14 px-4 pb-4 bg-white`}>
         <TouchableOpacity onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
-          <Ionicons name="menu" size={28} color="#0140CD" /> 
+          <Ionicons name="menu" size={28} color="#212529" /> 
         </TouchableOpacity>
         <View style={tw`flex-1 items-center`}>
-          <Text style={tw`text-xl font-bold text-[#0140CD]`}>
+          <Text style={tw`text-xl font-bold text-[#212529]`}>
             {editMode ? 'Editar dirección' : showMap ? 'Nueva dirección' : 'Ubicaciones Guardadas'}
           </Text>
         </View>
@@ -919,7 +919,7 @@ export default function UbicacionesGuardadasScreen() {
       <View style={tw`flex-row justify-between items-center px-5 pt-2 pb-3`}>
         <Text style={tw`text-base font-semibold text-gray-800`}>Lista de direcciones</Text>
         <Pressable 
-          style={tw`flex-row items-center bg-[#0140CD] px-4 py-2 rounded`}
+          style={tw`flex-row items-center bg-[#007bff] px-4 py-2 rounded`}
           onPress={() => {
             resetMapStates();
             setShowMap(true);

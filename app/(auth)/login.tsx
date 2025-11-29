@@ -29,6 +29,7 @@ export default function Login() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [isNavigating, setIsNavigating] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   // Auto-dismiss success toast after 2s
   useEffect(() => {
@@ -85,35 +86,45 @@ export default function Login() {
   };
 
   return (
-    <View style={tw`flex-1 bg-[#0140CD]`}>
-      <StatusBar barStyle="light-content" backgroundColor="#0140CD" />
+    <View style={tw`flex-1 bg-[#E8E8E8]`}>
+      <StatusBar barStyle="dark-content" backgroundColor="#E8E8E8" />
       
       <View style={tw`flex-1 justify-center items-center px-6`}>
-        <View style={tw`bg-white w-full max-w-md rounded-3xl p-8 shadow-lg`}>
+        {/* Título OrgTrack arriba */}
+        <View style={tw`mb-10`}>
+          <Text style={[tw`text-4xl font-bold text-center`, { color: '#5A5A5A' }]}>
+            <Text style={{ color: '#6B6B6B' }}>Org</Text>
+            <Text style={{ color: '#8B8B8B' }}>Track</Text>
+          </Text>
+        </View>
+
+        {/* Card blanco */}
+        <View style={tw`bg-white w-full max-w-md rounded-2xl p-8 shadow-lg`}>
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           >
-            {/* Título y subtítulo */}
-            <View style={tw`items-center mb-8`}>
-              <Text style={tw`text-[#0140CD] text-3xl font-bold mb-2`}>OrgTrack</Text>
-              <Text style={tw`text-gray-500 text-base`}>Entra a tu cuenta</Text>
-            </View>
+            {/* Subtítulo */}
+            <Text style={tw`text-gray-600 text-center text-base mb-6`}>
+              Inicia sesión para continuar
+            </Text>
 
-            {/* Correo electrónico */}
+            {/* Campo Correo con icono */}
             <View style={tw`mb-4`}>
-              <Text style={tw`text-gray-600 text-sm mb-1.5`}>Correo electrónico</Text>
-              <TextInput
-                placeholder="Email"
-                placeholderTextColor="#999"
-                style={tw`bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-700 ${focused === 'email' ? 'border-[#0140CD]' : ''} ${touched.email && !isEmailValid ? 'border-red-400' : ''}`}
-                value={email}
-                onChangeText={setEmail}
-                onFocus={() => setFocused('email')}
-                onBlur={() => handleBlur('email')}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                editable={!loading}
-              />
+              <View style={tw`flex-row items-center bg-white border border-gray-300 rounded-lg px-4 py-3 ${focused === 'email' ? 'border-[#0140CD]' : ''} ${touched.email && !isEmailValid ? 'border-red-400' : ''}`}>
+                <Feather name="mail" size={20} color="#999" style={tw`mr-3`} />
+                <TextInput
+                  placeholder="Correo"
+                  placeholderTextColor="#999"
+                  style={tw`flex-1 text-gray-700 text-base`}
+                  value={email}
+                  onChangeText={setEmail}
+                  onFocus={() => setFocused('email')}
+                  onBlur={() => handleBlur('email')}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  editable={!loading}
+                />
+              </View>
               {touched.email && !isEmailValid && (
                 <Text style={tw`text-red-500 text-xs mt-1`}>
                   Correo inválido
@@ -121,20 +132,22 @@ export default function Login() {
               )}
             </View>
 
-            {/* Contraseña */}
-            <View style={tw`mb-6`}>
-              <Text style={tw`text-gray-600 text-sm mb-1.5`}>Contraseña</Text>
-              <TextInput
-                placeholder="Contraseña"
-                placeholderTextColor="#999"
-                secureTextEntry
-                style={tw`bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-700 ${focused === 'password' ? 'border-[#0140CD]' : ''} ${touched.password && !isPasswordValid ? 'border-red-400' : ''}`}
-                value={password}
-                onChangeText={setPassword}
-                onFocus={() => setFocused('password')}
-                onBlur={() => handleBlur('password')}
-                editable={!loading}
-              />
+            {/* Campo Contraseña con icono */}
+            <View style={tw`mb-4`}>
+              <View style={tw`flex-row items-center bg-white border border-gray-300 rounded-lg px-4 py-3 ${focused === 'password' ? 'border-[#0140CD]' : ''} ${touched.password && !isPasswordValid ? 'border-red-400' : ''}`}>
+                <Feather name="lock" size={20} color="#999" style={tw`mr-3`} />
+                <TextInput
+                  placeholder="Contraseña"
+                  placeholderTextColor="#999"
+                  secureTextEntry
+                  style={tw`flex-1 text-gray-700 text-base`}
+                  value={password}
+                  onChangeText={setPassword}
+                  onFocus={() => setFocused('password')}
+                  onBlur={() => handleBlur('password')}
+                  editable={!loading}
+                />
+              </View>
               {touched.password && !isPasswordValid && (
                 <Text style={tw`text-red-500 text-xs mt-1`}>
                   La contraseña debe tener al menos 6 caracteres
@@ -142,40 +155,56 @@ export default function Login() {
               )}
             </View>
 
-            {/* Botón de iniciar sesión */}
-            <View style={tw`mb-6`}>
-              <Pressable
-                onPress={handleLogin}
-                disabled={loading}
-                style={({ pressed }) => tw`bg-[#0140CD] rounded-xl py-3.5 items-center ${pressed ? 'opacity-90' : ''}`}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={tw`text-white text-base font-semibold`}>Entrar</Text>
+            {/* Checkbox Recordarme */}
+            <Pressable 
+              onPress={() => setRememberMe(!rememberMe)}
+              style={tw`flex-row items-center mb-6`}
+            >
+              <View style={tw`w-5 h-5 border-2 ${rememberMe ? 'border-[#007AFF] bg-[#007AFF]' : 'border-gray-400'} rounded mr-2 items-center justify-center`}>
+                {rememberMe && (
+                  <Feather name="check" size={14} color="white" />
                 )}
-              </Pressable>
-            </View>
+              </View>
+              <Text style={tw`text-gray-700 text-sm`}>Recordarme</Text>
+            </Pressable>
 
-            {/* Olvidó contraseña y crear cuenta */}
-            <View style={tw`items-center gap-3`}>
+            {/* Botón Entrar */}
+            <Pressable
+              onPress={handleLogin}
+              disabled={loading}
+              style={({ pressed }) => tw`bg-[#007AFF] rounded-lg py-3.5 items-center mb-4 ${pressed ? 'opacity-90' : ''}`}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={tw`text-white text-base font-semibold`}>Entrar</Text>
+              )}
+            </Pressable>
+
+            {/* Enlaces */}
+            <View style={tw`items-center gap-2`}>
               <Pressable 
                 onPress={() => alert('Funcionalidad por implementar')}
                 disabled={loading || success || isNavigating}
                 style={({ pressed }) => tw`${(loading || success || isNavigating) ? 'opacity-50' : ''} ${pressed ? 'opacity-80' : ''}`}
               >
-                <Text style={tw`text-[#0140CD] text-sm`}>
-                  ¿Has olvidado tu contraseña?
+                <Text style={tw`text-[#007AFF] text-sm`}>
+                  ¿Olvidaste tu contraseña?
                 </Text>
               </Pressable>
               
               <Pressable 
-                onPress={() => router.push('/(auth)/register')}
+                onPress={() => {
+                  if (!loading && !success && !isNavigating) {
+                    setIsNavigating(true);
+                    router.replace('/(auth)/register');
+                  }
+                }}
                 disabled={loading || success || isNavigating}
                 style={({ pressed }) => tw`${(loading || success || isNavigating) ? 'opacity-50' : ''} ${pressed ? 'opacity-80' : ''}`}
               >
-                <Text style={tw`text-[#0140CD] text-sm`}>
-                  Crear cuenta nueva
+                <Text style={tw`text-[#007AFF] text-sm`}>
+                  Registrar nueva cuenta
                 </Text>
               </Pressable>
             </View>

@@ -841,14 +841,32 @@ export default function CrearEnvio() {
       }));
 
       // Payload único
+      // Construir loc con los campos que el backend espera (compatibilidad con la web)
+      const rutaGeoJSON = form.rutaGeoJSON || (segmentos && segmentos.length ? JSON.stringify({ type: 'LineString', coordinates: segmentos }) : null);
+      const segmentosPayload = rutaGeoJSON ? [{ segmentogeojson: rutaGeoJSON }] : [];
+
       const payload = {
         loc: {
+          // nombres: incluir ambas variantes por compatibilidad
           nombreOrigen: origenLabel,
-          coordenadasOrigen: [form.origen.latitude, form.origen.longitude],
+          nombreorigen: origenLabel,
           nombreDestino: destinoLabel,
+          nombredestino: destinoLabel,
+
+          // coordenadas individuales que usa la web/backend
+          origen_lat: form.origen.latitude,
+          origen_lng: form.origen.longitude,
+          destino_lat: form.destino.latitude,
+          destino_lng: form.destino.longitude,
+
+          // ruta y segmentos en el formato que espera el backend
+          rutaGeoJSON: rutaGeoJSON,
+          rutageojson: rutaGeoJSON,
+          segmentos: segmentosPayload,
+
+          // mantener posibles campos legacy
+          coordenadasOrigen: [form.origen.latitude, form.origen.longitude],
           coordenadasDestino: [form.destino.latitude, form.destino.longitude],
-          segmentos: segmentos,
-          rutaGeoJSON: form.rutaGeoJSON || null,
           ...rutaInfo
         },
         particiones

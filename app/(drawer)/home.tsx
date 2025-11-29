@@ -216,10 +216,10 @@ export default function HomeScreen() {
       {/* Header con el logo original */}
       <View style={tw`flex-row items-center pt-14 px-4 pb-4 bg-white`}>
         <TouchableOpacity onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
-          <Ionicons name="menu" size={28} color="#0140CD" /> 
+          <Ionicons name="menu" size={28} color="#212529" /> 
         </TouchableOpacity>
         <View style={tw`flex-1 items-center`}>
-          <Text style={tw`text-xl font-bold text-[#0140CD]`}>
+          <Text style={tw`text-xl font-bold text-[#212529]`}>
             {usuario.rol === 'transportista' ? 'Envíos' : 'Nuevo envío'}
           </Text>
         </View>
@@ -263,7 +263,7 @@ export default function HomeScreen() {
           <Text style={tw`text-gray-800 text-xl font-bold mb-5`}>Panel de Administrador</Text>
           <TouchableOpacity 
             style={[
-              tw`flex-row items-center bg-white border-2 border-[#0140CD] py-3.5 px-6 rounded-xl`,
+              tw`flex-row items-center bg-white border-2 border-[#212529] py-3.5 px-6 rounded-xl`,
               { 
                 shadowColor: '#000',
                 shadowOpacity: 0.1,
@@ -279,8 +279,8 @@ export default function HomeScreen() {
             }}
             disabled={btnDisabled}
           >
-            <Ionicons name="add-circle-outline" size={24} color="#0140CD" style={tw`mr-2`} />
-            <Text style={tw`text-[#0140CD] text-base font-semibold`}>Crear Envío</Text>
+            <Ionicons name="add-circle-outline" size={24} color="#212529" style={tw`mr-2`} />
+            <Text style={tw`text-[#212529] text-base font-semibold`}>Crear Envío</Text>
           </TouchableOpacity>
         </View>
       ) : usuario.rol === 'transportista' && (

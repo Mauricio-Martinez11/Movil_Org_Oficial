@@ -21,7 +21,7 @@ export const OPENROUTESERVICE_CONFIG = {
 
 // API Configuration
 export const BACKEND_CONFIG = {
-  API_BASE: 'http://192.168.0.10:8000/api',
+  API_BASE: 'http://192.168.0.9:8000/api',
 };
 
 // Función helper para obtener la API key de Google Maps

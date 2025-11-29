@@ -259,10 +259,10 @@ const Documentos = () => {
             >
               <Ionicons name="menu" size={24} color="#0140CD" />
             </Pressable>
-            <Text style={tw`text-2xl font-bold text-[#0140CD]`}>Mis documentos</Text>
+            <Text style={tw`text-2xl font-bold text-[#212529]`}>Mis documentos</Text>
             <View style={tw`w-10`} />
           </View>
-          <Text style={tw`text-sm text-gray-500`}>Selecciona un envío para ver sus documentos.</Text>
+         
         </View>
 
         {/* Barra de búsqueda */}
@@ -288,10 +288,10 @@ const Documentos = () => {
               </Text>
               {envios.length === 0 && (
                 <View style={tw`mt-4 p-4 bg-blue-50 rounded-lg max-w-xs`}>
-                  <Text style={tw`text-blue-800 text-sm text-center mb-2 font-semibold`}>
+                  <Text style={tw`text-[#212529] text-sm text-center mb-2 font-semibold`}>
                     <Text>Solo se muestran envíos entregados</Text>
                   </Text>
-                  <Text style={tw`text-blue-700 text-xs text-center`}>
+                  <Text style={tw`text-[#212529] text-xs text-center`}>
                     Los documentos están disponibles únicamente para envíos completados y entregados.
                   </Text>
                 </View>

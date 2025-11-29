@@ -38,7 +38,7 @@ export default function CustomDrawer(props: any) {
   };
 
   return (
-    <View style={tw`flex-1 bg-[#0140CD]`}>
+    <View style={tw`flex-1 bg-[#343a40]`}>
       <DrawerContentScrollView {...props} contentContainerStyle={tw`flex-grow`}>
         {/* Espacio superior más razonable */}
         <View style={tw`items-center mt-10 mb-6`}>

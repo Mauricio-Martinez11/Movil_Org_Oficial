@@ -22,9 +22,12 @@ function decodePolyline(encoded: string): { latitude: number; longitude: number 
 
 async function authHeaders() {
   const token = await AsyncStorage.getItem('token');
+  // Log temporal para depuración: solo indicamos si existe token (no lo mostramos)
+  console.log('authHeaders: token presente?', !!token);
   if (!token) throw new Error('No autenticado');
   return {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
     Authorization: `Bearer ${token}`,
   };
 }
@@ -132,9 +135,17 @@ export async function crearEnvio(payload: any) {
       throw new Error(errorMsg);
     }
 
+    // Verificar content-type antes de parsear la respuesta aunque el status sea 200
+    const ctDireccion = resDireccion.headers.get('content-type') || '';
+    if (!ctDireccion.includes('application/json')) {
+      const textResponse = await resDireccion.text();
+      console.error('❌ Respuesta no JSON al crear dirección:', textResponse.substring(0, 1000));
+      throw new Error('El servidor devolvió una respuesta no JSON al crear la dirección');
+    }
+
     const direccionData = await resDireccion.json();
     console.log('✅ Dirección creada:', direccionData);
-    
+
     const idDireccion = direccionData.id;
     
     if (!idDireccion) {
@@ -171,9 +182,17 @@ export async function crearEnvio(payload: any) {
       throw new Error(errorMsg);
     }
 
+    // Verificar content-type antes de parsear la respuesta aunque el status sea 200
+    const ctEnvio = resEnvio.headers.get('content-type') || '';
+    if (!ctEnvio.includes('application/json')) {
+      const textResponse = await resEnvio.text();
+      console.error('❌ Respuesta no JSON al crear envío:', textResponse.substring(0, 1000));
+      throw new Error('El servidor devolvió una respuesta no JSON al crear el envío');
+    }
+
     const envioData = await resEnvio.json();
     console.log('✅ Envío creado exitosamente:', envioData);
-    
+
     return envioData;
   } catch (error) {
     console.error('❌ Error en crearEnvio:', error);
