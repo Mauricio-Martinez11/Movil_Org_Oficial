@@ -131,14 +131,23 @@ export default function EnvioScreen() {
   };
 
   // Render shipment para cliente
+  // <-- Diseño del card de envío (aparece en las listas Pendientes / En curso / Anteriores)
+  // Aquí puedes cambiar:
+  // - el color del borde izquierdo (borderLeftColor)
+  // - el icono y su color (Ionicons name/color)
+  // - el badge de estado (Text con bg-[#0140CD])
+  // - tipografías y espaciado dentro del card
+  // Si quieres hacer ajustes por estado, usa `item.estado` dentro de este render.
   const renderEnvioCliente = ({ item }: { item: EnvioCliente }) => (
     <View style={tw`mb-4`}>
       <TouchableOpacity
+        // Card container: modifica estilos aquí
         style={[
           tw`bg-white mx-4 rounded-xl p-4 shadow`,
           { 
+            // Borde izquierdo del card (color principal visible en la lista)
             borderLeftWidth: 4, 
-            borderLeftColor: '#0140CD',
+            borderLeftColor: '#007bff', // <-- cambiar este color según el estado o tema
             shadowColor: '#000',
             shadowOpacity: 0.1,
             shadowOffset: { width: 0, height: 2 },
@@ -153,7 +162,8 @@ export default function EnvioScreen() {
         }}
       >
         <View style={tw`flex-row items-center mb-2`}>
-          <Ionicons name="cube-outline" size={24} color="#0140CD" />
+          {/* Icono del envío: cambia color o icono aquí */}
+          <Ionicons name="cube-outline" size={24} color="#007bff" />
           <Text style={tw`text-gray-800 text-lg font-semibold ml-2`}>
             Envío N.º {item.id}
           </Text>
@@ -161,8 +171,9 @@ export default function EnvioScreen() {
         <Text style={tw`text-gray-500 text-sm mb-3`}>
           {item.nombre_origen || 'Origen'} → {item.nombre_destino || 'Destino'} ▪︎ {formatearFecha(item.fecha_recogida)}
         </Text>
+        {/* Badge de estado: el fondo define el color del estado mostrado */}
         <View style={tw`self-start rounded-xl overflow-hidden`}>
-          <Text style={tw`text-white py-1 px-3 text-xs bg-[#0140CD]`}>
+          <Text style={tw`text-white py-1 px-3 text-xs bg-[#007bff]`}>
             {item.estado}
           </Text>
         </View>
@@ -177,10 +188,10 @@ export default function EnvioScreen() {
       {/* Header */}
       <View style={tw`flex-row items-center pt-14 px-4 pb-4 bg-white`}>
         <TouchableOpacity onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
-          <Ionicons name="menu" size={28} color="#0140CD" /> 
+          <Ionicons name="menu" size={28} color="#212529" /> 
         </TouchableOpacity>
         <View style={tw`flex-1 items-center`}>
-          <Text style={tw`text-xl font-bold text-[#0140CD]`}>
+          <Text style={tw`text-xl font-bold text-[#212529]`}>
             Envíos
           </Text>
         </View>
@@ -220,7 +231,7 @@ export default function EnvioScreen() {
       {/* Lista de envíos */}
       {loading ? (
         <View style={tw`flex-1 justify-center items-center`}>
-          <ActivityIndicator size="large" color="#0140CD" />
+          <ActivityIndicator size="large" color="#007bff" />
         </View>
       ) : enviosClienteFiltrados.length === 0 ? (
         <View style={tw`flex-1 justify-center items-center`}>
@@ -236,7 +247,7 @@ export default function EnvioScreen() {
             <RefreshControl 
               refreshing={refreshing} 
               onRefresh={onRefresh} 
-              colors={['#0140CD']} 
+              colors={['#007bff']} 
             />
           }
         />

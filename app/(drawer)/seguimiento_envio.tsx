@@ -275,18 +275,107 @@ export default function SeguimientoEnvio() {
       });
 
       const data = await res.json();
+      console.log('📦 Envío recibido (API):', JSON.stringify(data, null, 2));
       
       if (!res.ok) {
         throw new Error(data.error || 'Error al obtener envío');
       }
 
-      setEnvio(data);
+      // Normalizar propiedades de coordenadas para asegurar formato [latitude, longitude]
+      const normalized: any = { ...data };
 
-      // Obtener rutas para cada partición si hay coordenadas
-      if (data.coordenadas_origen && data.coordenadas_destino) {
-        data.particiones.forEach((particion: Particion, index: number) => {
-          obtenerRuta(data.coordenadas_origen, data.coordenadas_destino, index);
+      // Si el backend devuelve origen_lat / origen_lng, convertir a coordenadas_origen
+      if ((!normalized.coordenadas_origen || !normalized.coordenadas_destino) && (normalized.origen_lat !== undefined || normalized.origen_lng !== undefined || normalized.destino_lat !== undefined || normalized.destino_lng !== undefined)) {
+        normalized.coordenadas_origen = normalized.coordenadas_origen || (
+          (normalized.origen_lat !== undefined && normalized.origen_lng !== undefined) ? [Number(normalized.origen_lat), Number(normalized.origen_lng)] : null
+        );
+        normalized.coordenadas_destino = normalized.coordenadas_destino || (
+          (normalized.destino_lat !== undefined && normalized.destino_lng !== undefined) ? [Number(normalized.destino_lat), Number(normalized.destino_lng)] : null
+        );
+      }
+
+      // También admitir campos con nombres camelCase que puedan venir de otros endpoints
+      if ((!normalized.coordenadas_origen || !normalized.coordenadas_destino) && (normalized.coordenadasOrigen || normalized.coordenadasDestino)) {
+        normalized.coordenadas_origen = normalized.coordenadas_origen || (Array.isArray(normalized.coordenadasOrigen) ? [Number(normalized.coordenadasOrigen[0]), Number(normalized.coordenadasOrigen[1])] : null);
+        normalized.coordenadas_destino = normalized.coordenadas_destino || (Array.isArray(normalized.coordenadasDestino) ? [Number(normalized.coordenadasDestino[0]), Number(normalized.coordenadasDestino[1])] : null);
+      }
+
+      // Si las coordenadas vienen como objetos { lat, lng } convertir a arrays [lat, lng]
+      if (normalized.coordenadas_origen && !Array.isArray(normalized.coordenadas_origen) && typeof normalized.coordenadas_origen === 'object') {
+        const o = normalized.coordenadas_origen as any;
+        if (o.lat !== undefined && o.lng !== undefined) {
+          normalized.coordenadas_origen = [Number(o.lat), Number(o.lng)];
+        } else if (o.latitude !== undefined && o.longitude !== undefined) {
+          normalized.coordenadas_origen = [Number(o.latitude), Number(o.longitude)];
+        }
+      }
+      if (normalized.coordenadas_destino && !Array.isArray(normalized.coordenadas_destino) && typeof normalized.coordenadas_destino === 'object') {
+        const d = normalized.coordenadas_destino as any;
+        if (d.lat !== undefined && d.lng !== undefined) {
+          normalized.coordenadas_destino = [Number(d.lat), Number(d.lng)];
+        } else if (d.latitude !== undefined && d.longitude !== undefined) {
+          normalized.coordenadas_destino = [Number(d.latitude), Number(d.longitude)];
+        }
+      }
+
+      // Detectar si el array está en orden [lng, lat] y corregir a [lat, lng]
+      const fixOrder = (arr: any[] | null) => {
+        if (!Array.isArray(arr) || arr.length < 2) return arr;
+        const a = Number(arr[0]);
+        const b = Number(arr[1]);
+        // si el primer valor está fuera del rango de latitudes, probablemente es lng
+        if (Math.abs(a) > 90 && Math.abs(b) <= 90) {
+          return [b, a];
+        }
+        return [a, b];
+      };
+
+      normalized.coordenadas_origen = fixOrder(normalized.coordenadas_origen);
+      normalized.coordenadas_destino = fixOrder(normalized.coordenadas_destino);
+
+      // Si el backend ya proporciona rutaGeoJSON (o en direccion.rutageojson), usarla y convertir coordenadas
+      const rutaString = normalized.rutaGeoJSON || normalized.rutageojson || (normalized.direccion && normalized.direccion.rutageojson);
+      let rutaFromServer: { latitude: number; longitude: number }[] | null = null;
+      if (rutaString) {
+        try {
+          const rutaObj = typeof rutaString === 'string' ? JSON.parse(rutaString) : rutaString;
+          const coords = rutaObj.coordinates || (rutaObj.features && rutaObj.features[0] && rutaObj.features[0].geometry && rutaObj.features[0].geometry.coordinates);
+          if (Array.isArray(coords)) {
+            rutaFromServer = coords.map((c: any) => {
+              // coords coming from server are [lng, lat]
+              const lng = Number(c[0]);
+              const lat = Number(c[1]);
+              return { latitude: lat, longitude: lng };
+            });
+          }
+        } catch (e) {
+          console.warn('No se pudo parsear rutaGeoJSON del servidor:', e);
+        }
+      }
+
+      setEnvio(normalized);
+
+      // Si tenemos una ruta provista por el servidor, usarla para todos los índices
+      if (rutaFromServer && rutaFromServer.length > 0) {
+        // asignar la misma ruta a todas las particiones
+        const newRutaCoords: any = {};
+        normalized.particiones.forEach((_: Particion, index: number) => {
+          newRutaCoords[index] = rutaFromServer as any[];
         });
+        setRutaCoordinates(prev => ({ ...prev, ...newRutaCoords }));
+        // iniciar animación si corresponde
+        normalized.particiones.forEach((particion: Particion, index: number) => {
+          if (particion.estado?.toLowerCase() === 'en curso') {
+            animarCamion(index, rutaFromServer as any[]);
+          }
+        });
+      } else if (normalized.coordenadas_origen && normalized.coordenadas_destino) {
+        // Obtener rutas por Google sólo si no hay ruta local
+        normalized.particiones.forEach((particion: Particion, index: number) => {
+          obtenerRuta(normalized.coordenadas_origen, normalized.coordenadas_destino, index);
+        });
+      } else {
+        console.warn('⚠️ Coordenadas origen/destino no presentes en la respuesta del servidor:', Object.keys(normalized));
       }
     } catch (err) {
       console.error('❌ Error:', err);
@@ -394,10 +483,10 @@ export default function SeguimientoEnvio() {
       {/* Header */}
       <View style={tw`flex-row items-center pt-14 px-4 pb-4 bg-white`}>
         <TouchableOpacity onPress={() => router.push('/envio')}>
-          <Ionicons name="arrow-back" size={28} color="#0140CD" />
+          <Ionicons name="arrow-back" size={28} color="#212529" />
         </TouchableOpacity>
         <View style={tw`flex-1 items-center`}>
-          <Text style={tw`text-xl font-bold text-[#0140CD]`}>
+          <Text style={tw`text-xl font-bold text-[#212529]`}>
             Seguimiento del envío
           </Text>
         </View>
