@@ -123,12 +123,12 @@ const AcordeonInstrucciones = ({
   return (
     <>
       <Pressable
-        style={tw`flex-row items-center bg-blue-50 border border-blue-100 rounded-xl px-3 py-3 mb-2 mt-1`}
+        style={tw`flex-row items-center bg-gray-200 border border-gray-100 rounded-xl px-3 py-3 mb-2 mt-1`}
         onPress={() => setOpen(v => !v)}
       >
-        <Ionicons name="information-circle-outline" size={18} color="#3B82F6" />
-        <Text style={tw`ml-2 text-blue-700 text-sm`}>Agregar instrucciones especiales <Text style={tw`text-gray-400`}>(Opcional)</Text></Text>
-        <Ionicons name={open ? "chevron-up" : "chevron-down"} size={18} color="#3B82F6" style={tw`ml-2`} />
+        <Ionicons name="information-circle-outline" size={18} color="#212529" />
+        <Text style={tw`ml-2 text-gray-700 text-sm`}>Agregar instrucciones especiales <Text style={tw`text-gray-400`}>(Opcional)</Text></Text>
+        <Ionicons name={open ? "chevron-up" : "chevron-down"} size={18} color="#212529" style={tw`ml-2`} />
       </Pressable>
       <Animated.View
         style={{
@@ -950,6 +950,30 @@ export default function CrearEnvio() {
   const instruccionesAnim = useRef<{[key: number]: Animated.Value}>({}).current;
   const [instruccionesHeights, setInstruccionesHeights] = useState<{[key: number]: number}>({});
 
+  // Estado para edición inline de cantidad/peso por partición+carga
+  const [editingCarga, setEditingCarga] = useState<{[key:string]: boolean}>({});
+
+  const cargaInputRefs = useRef<{[key:string]: any}>({});
+
+  const toggleEditingCarga = (pIndex: number, cIndex: number, value?: boolean, field?: 'cantidad' | 'peso') => {
+    const key = `${pIndex}_${cIndex}`;
+    setEditingCarga(prev => {
+      const next = { ...prev, [key]: typeof value === 'boolean' ? value : !prev[key] };
+      // si se activó la edición, enfocar el input correspondiente después
+      if (next[key] && field) {
+        setTimeout(() => {
+          try {
+            const refKey = `${key}_${field}`;
+            cargaInputRefs.current[refKey] && cargaInputRefs.current[refKey].focus && cargaInputRefs.current[refKey].focus();
+          } catch (e) {
+            // ignore
+          }
+        }, 80);
+      }
+      return next;
+    });
+  };
+
   const toggleInstrucciones = (idx: number) => {
     const open = !instruccionesAbiertas[idx];
     setInstruccionesAbiertas(prev => ({ ...prev, [idx]: open }));
@@ -1116,11 +1140,11 @@ export default function CrearEnvio() {
                 </View>
                 {/* Cambiar View por Pressable para navegar a ubicaciones-guardadas */}
                 <Pressable
-                  style={tw`bg-blue-50 p-3 rounded-lg flex-row items-center`}
+                  style={tw`bg-gray-200 p-3 rounded-lg flex-row items-center`}
                   onPress={() => router.push('/ubicaciones-guardadas')}
                 >
-                  <Ionicons name="add-outline" size={20} color="#3B82F6" />
-                  <Text style={tw`text-blue-700 ml-2 text-sm flex-1`}>
+                  <Ionicons name="add-outline" size={20} color="#212529" />
+                  <Text style={tw`#212529 ml-2 text-sm flex-1`}>
                     Añadir punto de recogida o entrega
                   </Text>
                 </Pressable>
@@ -1294,50 +1318,76 @@ export default function CrearEnvio() {
                               <Ionicons name="chevron-down" size={16} color="#9CA3AF" />
                             </Pressable>
                           </View>
-                          {/* Inputs cantidad y peso en una fila */}
-                          <View style={tw`flex-row mb-4`}>
+                          {/* Inputs cantidad y peso en una fila (tocar para editar) */}
+                          <View style={tw`flex-row mb-4`}> 
+                            {/** Cantidad editable al tocar */}
                             <View style={tw`flex-1 mr-2`}> 
                               <Text style={tw`text-xs text-gray-800 mb-1`}>Cantidad</Text>
-                              <View style={tw`border border-gray-300 bg-white rounded-xl flex-row items-center ${errores[`particion_${pIndex}_carga_${cIndex}_cantidad`] ? 'border-red-500' : ''}`}> 
-                                <Pressable 
-                                  ref={el => {camposRefs.current[`particion_${pIndex}_carga_${cIndex}_cantidad`] = el}}
-                                  onPress={() => updateCarga(pIndex, cIndex, 'cantidad', Math.max(0, carga.cantidad - 1))} 
-                                  style={tw`p-3 bg-gray-100 rounded-lg mx-1`}
-                                >
-                                  <Text style={tw`text-gray-600 text-lg font-bold`}>−</Text>
-                                </Pressable>
-                                <View style={tw`flex-1 items-center`}>
-                                  <Text style={tw`text-gray-800 text-lg font-semibold`}>{carga.cantidad}</Text>
+                              <View style={tw`border border-gray-300 bg-white rounded-xl px-2 py-2 ${errores[`particion_${pIndex}_carga_${cIndex}_cantidad`] ? 'border-red-500' : ''}`}> 
+                                <View style={tw`flex-row items-center`}> 
+                                  <Pressable onPress={() => updateCarga(pIndex, cIndex, 'cantidad', Math.max(0, carga.cantidad - 1))} style={tw`p-3 bg-gray-100 rounded-lg mx-1`}> 
+                                    <Text style={tw`text-gray-600 text-lg font-bold`}>−</Text>
+                                  </Pressable>
+                                  <View style={tw`flex-1 items-center`}> 
+                                    {editingCarga[`${pIndex}_${cIndex}`] ? (
+                                      <TextInput
+                                        ref={r => { cargaInputRefs.current[`${pIndex}_${cIndex}_cantidad`] = r; }}
+                                        style={tw`text-gray-800 text-lg font-semibold p-2 w-full text-center`}
+                                        value={String(carga.cantidad)}
+                                        keyboardType="numeric"
+                                        onChangeText={t => {
+                                          const n = t === '' ? 0 : Math.max(0, parseInt(t.replace(/[^0-9]/g, ''), 10) || 0);
+                                          updateCarga(pIndex, cIndex, 'cantidad', n);
+                                        }}
+                                        onBlur={() => toggleEditingCarga(pIndex, cIndex, false)}
+                                        returnKeyType="done"
+                                        onSubmitEditing={() => toggleEditingCarga(pIndex, cIndex, false)}
+                                      />
+                                    ) : (
+                                      <Pressable onPress={() => toggleEditingCarga(pIndex, cIndex, true, 'cantidad')} style={tw`w-full items-center`}> 
+                                        <Text style={tw`text-gray-800 text-lg font-semibold`}>{carga.cantidad}</Text>
+                                      </Pressable>
+                                    )}
+                                  </View>
+                                  <Pressable onPress={() => updateCarga(pIndex, cIndex, 'cantidad', carga.cantidad + 1)} style={tw`p-3 bg-gray-100 rounded-lg mx-1`}> 
+                                    <Text style={tw`text-gray-600 text-lg font-bold`}>+</Text>
+                                  </Pressable>
                                 </View>
-                                <Pressable 
-                                  ref={el => {camposRefs.current[`particion_${pIndex}_carga_${cIndex}_cantidad`] = el}}
-                                  onPress={() => updateCarga(pIndex, cIndex, 'cantidad', carga.cantidad + 1)} 
-                                  style={tw`p-3 bg-gray-100 rounded-lg mx-1`}
-                                >
-                                  <Text style={tw`text-gray-600 text-lg font-bold`}>+</Text>
-                                </Pressable>
                               </View>
                             </View>
+                            {/** Peso editable al tocar */}
                             <View style={tw`flex-1 mx-1`}> 
                               <Text style={tw`text-xs text-gray-800 mb-1`}>Peso (kg)</Text>
-                              <View style={tw`border border-gray-300 bg-white rounded-xl flex-row items-center ${errores[`particion_${pIndex}_carga_${cIndex}_peso`] ? 'border-red-500' : ''}`}> 
-                                <Pressable 
-                                  ref={el => {camposRefs.current[`particion_${pIndex}_carga_${cIndex}_peso`] = el}}
-                                  onPress={() => updateCarga(pIndex, cIndex, 'peso', Math.max(0, carga.peso - 1))} 
-                                  style={tw`p-3 bg-gray-100 rounded-lg mx-1`}
-                                >
-                                  <Text style={tw`text-gray-600 text-lg font-bold`}>−</Text>
-                                </Pressable>
-                                <View style={tw`flex-1 items-center`}>
-                                  <Text style={tw`text-gray-800 text-lg font-semibold`}>{carga.peso} kg</Text>
+                              <View style={tw`border border-gray-300 bg-white rounded-xl px-2 py-2 ${errores[`particion_${pIndex}_carga_${cIndex}_peso`] ? 'border-red-500' : ''}`}> 
+                                <View style={tw`flex-row items-center`}> 
+                                  <Pressable onPress={() => updateCarga(pIndex, cIndex, 'peso', Math.max(0, carga.peso - 1))} style={tw`p-3 bg-gray-100 rounded-lg mx-1`}> 
+                                    <Text style={tw`text-gray-600 text-lg font-bold`}>−</Text>
+                                  </Pressable>
+                                  <View style={tw`flex-1 items-center`}> 
+                                    {editingCarga[`${pIndex}_${cIndex}`] ? (
+                                      <TextInput
+                                        ref={r => { cargaInputRefs.current[`${pIndex}_${cIndex}_peso`] = r; }}
+                                        style={tw`text-gray-800 text-lg font-semibold p-2 w-full text-center`}
+                                        value={String(carga.peso)}
+                                        keyboardType="numeric"
+                                        onChangeText={t => {
+                                          const n = t === '' ? 0 : Math.max(0, parseFloat(t.replace(/[^0-9.,]/g, '').replace(',', '.')) || 0);
+                                          updateCarga(pIndex, cIndex, 'peso', n);
+                                        }}
+                                        onBlur={() => toggleEditingCarga(pIndex, cIndex, false)}
+                                        returnKeyType="done"
+                                        onSubmitEditing={() => toggleEditingCarga(pIndex, cIndex, false)}
+                                      />
+                                    ) : (
+                                      <Pressable onPress={() => toggleEditingCarga(pIndex, cIndex, true, 'peso')} style={tw`w-full items-center`}> 
+                                        <Text style={tw`text-gray-800 text-lg font-semibold`}>{carga.peso} kg</Text>
+                                      </Pressable>
+                                    )}
+                                  </View>
+                                  <Pressable onPress={() => updateCarga(pIndex, cIndex, 'peso', carga.peso + 1)} style={tw`p-3 bg-gray-100 rounded-lg mx-1`}> 
+                                    <Text style={tw`text-gray-600 text-lg font-bold`}>+</Text>
+                                  </Pressable>
                                 </View>
-                                <Pressable 
-                                  ref={el => {camposRefs.current[`particion_${pIndex}_carga_${cIndex}_peso`] = el}}
-                                  onPress={() => updateCarga(pIndex, cIndex, 'peso', carga.peso + 1)} 
-                                  style={tw`p-3 bg-gray-100 rounded-lg mx-1`}
-                                >
-                                  <Text style={tw`text-gray-600 text-lg font-bold`}>+</Text>
-                                </Pressable>
                               </View>
                             </View>
                           </View>
@@ -1442,7 +1492,7 @@ export default function CrearEnvio() {
                         </View>
                         {/* Descripción del transporte seleccionado */}
                         <View style={tw`mt-2 px-2`}>
-                          <Text style={tw`text-blue-700 text-center text-sm`}>
+                          <Text style={tw`text-gray-700 text-center text-sm`}>
                             {tiposTransporte.find(t => t.id === particion.tipoTransporteId)?.descripcion || 'Selecciona un tipo de transporte para ver su descripción.'}
                           </Text>
                         </View>
@@ -1468,7 +1518,7 @@ export default function CrearEnvio() {
                   <Text style={tw`text-gray-700 font-semibold text-lg`}>Anterior</Text>
                 </Pressable>
                 <Pressable
-                  style={tw`flex-1 bg-blue-600 rounded-lg p-4 ml-2 items-center`}
+                  style={tw`flex-1 bg-blue-500 rounded-lg p-4 ml-2 items-center`}
                   onPress={() => {
                     const { esValido, primerError } = validarFormulario();
                     if (!esValido && primerError) {
@@ -1831,7 +1881,7 @@ export default function CrearEnvio() {
       {step === 1 && (
         <View style={tw`absolute bottom-16 left-0 right-0 px-4`}>
           <Pressable 
-            style={tw`bg-blue-600 p-4 rounded-lg items-center`}
+            style={tw`bg-blue-500 p-4 rounded-lg items-center`}
             onPress={handleContinuar}
           >
             <Text style={tw`text-white font-semibold text-lg`}>Continuar</Text>

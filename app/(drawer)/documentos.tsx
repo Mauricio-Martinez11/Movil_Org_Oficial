@@ -257,7 +257,7 @@ const Documentos = () => {
               onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
               style={tw`p-2`}
             >
-              <Ionicons name="menu" size={24} color="#0140CD" />
+              <Ionicons name="menu" size={24} color="#212529" />
             </Pressable>
             <Text style={tw`text-2xl font-bold text-[#212529]`}>Mis documentos</Text>
             <View style={tw`w-10`} />
