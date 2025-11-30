@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { getBackendApiBase } from '../config/api-config';
 import * as Print from 'expo-print';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 
 interface DocumentoData {
@@ -171,13 +171,10 @@ const DocumentoFinal = () => {
         base64: false,
       });
 
-      // Renombrar el archivo
+      // Renombrar el archivo y moverlo al directorio de documentos de la app
       const fileName = `documento_cliente_${documentoData.particion.id_asignacion}.pdf`;
-      const newUri = `./${fileName}`;
-      await FileSystem.moveAsync({
-        from: uri,
-        to: newUri,
-      });
+      const newUri = `${FileSystem.documentDirectory}${fileName}`;
+      await FileSystem.moveAsync({ from: uri, to: newUri });
 
       // Verificar si el dispositivo puede compartir
       if (await Sharing.isAvailableAsync()) {
@@ -528,11 +525,11 @@ const DocumentoFinal = () => {
             style={tw`p-2`}
             onPress={volverAParticiones}
           >
-            <Ionicons name="arrow-back" size={24} color="#0140CD" />
+            <Ionicons name="arrow-back" size={24} color="#007bff" />
           </Pressable>
           
           <View style={tw`flex-1 items-center`}>
-            <Text style={tw`text-lg font-medium text-blue-600`}>
+            <Text style={tw`text-lg font-medium text-[#007bff]`}>
               Documentos de Clientes
             </Text>
           </View>
@@ -665,7 +662,7 @@ const DocumentoFinal = () => {
         {/* Botón de descarga */}
         <View style={tw`items-center my-6`}>
           <Pressable
-            style={tw`${generandoPDF ? 'bg-blue-400' : 'bg-blue-600'} px-6 py-3 rounded-lg flex-row items-center ${generandoPDF ? '' : 'active:bg-blue-700'}`}
+            style={tw`${generandoPDF ? 'bg-[#007bff]' : 'bg-[#007bff]'} px-6 py-3 rounded-lg flex-row items-center ${generandoPDF ? '' : 'active:bg-blue-700'}`}
             onPress={descargarPDF}
             disabled={generandoPDF}
           >

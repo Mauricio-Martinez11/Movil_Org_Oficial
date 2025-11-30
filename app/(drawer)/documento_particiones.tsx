@@ -178,7 +178,7 @@ const DocumentoParticiones = () => {
       <View style={tw`bg-white rounded-xl shadow-sm mb-3 px-4 py-4 flex-row items-center`}>
         {/* ID */}
         <View style={tw`flex-1`}>
-          <Text style={tw`font-bold text-[#0140CD] text-base`}>
+          <Text style={tw`font-bold text-[#007bff] text-base`}>
             #{item.id_asignacion}
           </Text>
         </View>
@@ -193,7 +193,7 @@ const DocumentoParticiones = () => {
         {/* Acción */}
         <View style={tw`flex-1 items-end`}>
           <Pressable
-            style={tw`bg-[#0140CD] px-4 py-2 rounded-lg`}
+            style={tw`bg-[#007bff] px-4 py-2 rounded-lg`}
             onPress={() => verDocumento(item.id_asignacion)}
           >
             <Text style={tw`text-white text-xs font-semibold`}>Ver</Text>
@@ -206,7 +206,7 @@ const DocumentoParticiones = () => {
   if (loading) {
     return (
       <View style={tw`flex-1 justify-center items-center bg-white`}>
-        <ActivityIndicator size="large" color="#0140CD" />
+        <ActivityIndicator size="large" color="#007bff" />
         <Text style={tw`text-gray-600 mt-4`}>Cargando particiones...</Text>
       </View>
     );
@@ -236,11 +236,11 @@ const DocumentoParticiones = () => {
             style={tw`p-2`}
             onPress={volverADocumentos}
           >
-            <Ionicons name="arrow-back" size={24} color="#0140CD" />
+            <Ionicons name="arrow-back" size={24} color="#007bff" />
           </Pressable>
           
           <View style={tw`flex-1 items-center`}>
-            <Text style={tw`text-lg font-bold text-[#0140CD]`}>
+            <Text style={tw`text-lg font-bold text-[#007bff]`}>
               Particiones del Envío
             </Text>
           </View>
@@ -255,12 +255,12 @@ const DocumentoParticiones = () => {
           {/* Título */}
           <View style={tw`p-4 pb-3`}>
             <View style={tw`flex-row items-center justify-between mb-1`}>
-              <Text style={tw`text-lg font-bold text-[#0140CD]`}>
+              <Text style={tw`text-lg font-bold text-[#007bff]`}>
                 Lista de Particiones
               </Text>
               <View style={tw`flex-row items-center`}>
                 {refreshing && (
-                  <ActivityIndicator size="small" color="#0140CD" style={tw`mr-2`} />
+                  <ActivityIndicator size="small" color="#007bff" style={tw`mr-2`} />
                 )}
                 <Pressable
                   onPress={onRefresh}
@@ -270,7 +270,7 @@ const DocumentoParticiones = () => {
                   <Ionicons 
                     name="refresh" 
                     size={20} 
-                    color="#0140CD" 
+                    color="#007bff" 
                   />
                 </Pressable>
               </View>
@@ -299,8 +299,8 @@ const DocumentoParticiones = () => {
                   <RefreshControl
                     refreshing={refreshing}
                     onRefresh={onRefresh}
-                    colors={['#0140CD']}
-                    tintColor="#0140CD"
+                    colors={['#007bff']}
+                    tintColor="#007bff"
                   />
                 }
                 ListHeaderComponent={renderHeader}

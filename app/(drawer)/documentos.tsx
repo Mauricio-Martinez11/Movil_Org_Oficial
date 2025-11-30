@@ -308,7 +308,7 @@ const Documentos = () => {
                   {/* Header con ID y Estado */}
                   <View style={tw`flex-row items-center justify-between mb-2`}>
                     <View style={tw`flex-row items-center`}>
-                      <Text style={tw`text-[#0140CD] font-bold text-sm mr-2`}>
+                      <Text style={tw`text-[#007bff] font-bold text-sm mr-2`}>
                         ID: {envio.id}
                       </Text>
                       <View style={tw`px-2 py-0.5 rounded-full ${getEstadoColor(envio.estado)}`}>
@@ -322,7 +322,7 @@ const Documentos = () => {
                   {/* Fechas - Compactas pero legibles */}
                   <View style={tw`flex-row mb-2 gap-2`}>
                     <View style={tw`flex-1 bg-blue-50 px-2 py-1 rounded`}>
-                      <Text style={tw`text-xs text-blue-700 font-medium`}>
+                      <Text style={tw`text-xs text-[#007bff] font-medium`}>
                         Recogida: {formatearFecha(envio.fecha_creacion)}
                       </Text>
                     </View>
