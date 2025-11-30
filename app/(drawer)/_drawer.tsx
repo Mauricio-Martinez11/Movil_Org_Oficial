@@ -123,8 +123,8 @@ export default function CustomDrawer(props: any) {
         ]} 
         onPress={() => setShowModal(true)}
       >
-        <Ionicons name="log-out-outline" size={22} color="#0140CD" />
-        <Text style={tw`text-[#0140CD] text-base font-semibold ml-2.5`}>Cerrar sesión</Text>
+        <Ionicons name="log-out-outline" size={22} color="#007bff" />
+        <Text style={tw`text-[#007bff] text-base font-semibold ml-2.5`}>Cerrar sesión</Text>
       </Pressable>
 
       {/* Modal */}
@@ -136,10 +136,10 @@ export default function CustomDrawer(props: any) {
             <Text style={tw`text-sm text-gray-600 my-2.5 text-center`}>Perderás el acceso a tu cuenta.</Text>
             <View style={tw`flex-row gap-3 mt-5`}>
               <Pressable
-                style={tw`flex-1 py-2.5 px-4.5 rounded-xl items-center bg-white border-2 border-[#0140CD]`}
+                style={tw`flex-1 py-2.5 px-4.5 rounded-xl items-center bg-white border-2 border-[#007bff]`}
                 onPress={() => setShowModal(false)}
               >
-                <Text style={tw`text-[#0140CD] font-semibold`}>Cancelar</Text>
+                <Text style={tw`text-[#007bff] font-semibold`}>Cancelar</Text>
               </Pressable>
               <Pressable
                 style={tw`flex-1 py-2.5 px-4.5 rounded-xl items-center bg-red-600`}

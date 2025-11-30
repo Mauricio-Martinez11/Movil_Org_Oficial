@@ -176,7 +176,7 @@ export default function HomeScreen() {
           tw`bg-white mx-4 rounded-xl p-4 shadow`,
           { 
             borderLeftWidth: 4, 
-            borderLeftColor: '#0140CD',
+            borderLeftColor: '#007bff',
             shadowColor: '#000',
             shadowOpacity: 0.1,
             shadowOffset: { width: 0, height: 2 },
@@ -192,7 +192,7 @@ export default function HomeScreen() {
         }
       >
         <View style={tw`flex-row items-center mb-2`}>
-          <Ionicons name="cube-outline" size={24} color="#0140CD" />
+          <Ionicons name="cube-outline" size={24} color="#007bff" />
           <Text style={tw`text-gray-800 text-lg font-semibold ml-2`}>
             Asignación N.º {item.id_asignacion}
           </Text>
@@ -201,7 +201,7 @@ export default function HomeScreen() {
           Envío #{item.id_envio} ▪︎ {item.recogidaEntrega?.fecha_recogida?.split('T')[0] || '—'}
         </Text>
         <View style={tw`self-start rounded-xl overflow-hidden`}>
-          <Text style={tw`text-white py-1 px-3 text-xs bg-[#0140CD]`}>
+          <Text style={tw`text-white py-1 px-3 text-xs bg-[#007bff]`}>
             {item.estado || item.estado_envio}
           </Text>
         </View>
@@ -234,24 +234,24 @@ export default function HomeScreen() {
         <View style={tw`bg-white`}>
           <View style={tw`flex-row justify-center py-3 border-b border-gray-200`}>
             <TouchableOpacity
-              style={tw`px-3 py-1.5 mx-1 ${filtroActual === 'en curso' ? 'border border-[#0140CD] rounded-full' : ''}`}
+              style={tw`px-3 py-1.5 mx-1 ${filtroActual === 'en curso' ? 'border border-[#212529] rounded-full' : ''}`}
               onPress={() => setFiltroActual('en curso')}
             >
-              <Text style={tw`${filtroActual === 'en curso' ? 'text-[#0140CD]' : 'text-gray-600'}`}>En Curso</Text>
+              <Text style={tw`${filtroActual === 'en curso' ? 'text-[#212529]' : 'text-gray-600'}`}>En Curso</Text>
             </TouchableOpacity>
             
             <TouchableOpacity
-              style={tw`px-3 py-1.5 mx-1 ${filtroActual === 'completados' ? 'border border-[#0140CD] rounded-full' : ''}`}
+              style={tw`px-3 py-1.5 mx-1 ${filtroActual === 'completados' ? 'border border-[#212529] rounded-full' : ''}`}
               onPress={() => setFiltroActual('completados')}
             >
-              <Text style={tw`${filtroActual === 'completados' ? 'text-[#0140CD]' : 'text-gray-600'}`}>Completados</Text>
+              <Text style={tw`${filtroActual === 'completados' ? 'text-[#212529]' : 'text-gray-600'}`}>Completados</Text>
             </TouchableOpacity>
             
             <TouchableOpacity
-              style={tw`px-3 py-1.5 mx-1 ${filtroActual === 'asignado' ? 'border border-[#0140CD] rounded-full' : ''}`}
+              style={tw`px-3 py-1.5 mx-1 ${filtroActual === 'asignado' ? 'border border-[#212529] rounded-full' : ''}`}
               onPress={() => setFiltroActual('asignado')}
             >
-              <Text style={tw`${filtroActual === 'asignado' ? 'text-[#0140CD]' : 'text-gray-600'}`}>Asignados</Text>
+              <Text style={tw`${filtroActual === 'asignado' ? 'text-[#212529]' : 'text-gray-600'}`}>Asignados</Text>
             </TouchableOpacity>
           </View>
         </View>

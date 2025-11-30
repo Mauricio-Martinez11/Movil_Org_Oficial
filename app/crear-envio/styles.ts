@@ -66,7 +66,7 @@ export default StyleSheet.create({
 
 // Constantes de colores si se necesitan fuera de Tailwind
 export const colors = {
-  primary: '#0140CD',
+  primary: '#007bff',
   secondary: '#ffffff',
   success: '#10b981',
   warning: '#f59e0b',

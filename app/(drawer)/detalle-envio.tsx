@@ -139,6 +139,22 @@ export default function DetalleEnvioView() {
     return incidente?.titulo || codigo.replace(/_/g, ' ');
   };
 
+  /* ---------- helpers para normalizar estados de envío ---------- */
+  const estadoNormalized = (e:any) => {
+    const raw = ((e?.estado ?? e?.estado_envio) || '').toString().toLowerCase().trim();
+    if (!raw) return '';
+    if (raw.includes('complet') || raw.includes('entreg') || raw.includes('finaliz')) return 'completado';
+    if (raw.includes('parcial')) return 'parcialmente entregado';
+    if (raw.includes('curso')) return 'en curso';
+    if (raw.includes('pend')) return 'pendiente';
+    return raw;
+  };
+
+  const isEnCurso = (e:any) => estadoNormalized(e) === 'en curso';
+  const isParcial = (e:any) => estadoNormalized(e) === 'parcialmente entregado';
+  const isPendiente = (e:any) => estadoNormalized(e) === 'pendiente';
+  const isCompletado = (e:any) => estadoNormalized(e) === 'completado';
+
   /* ---------- cargar catálogos desde el backend ---------- */
   const cargarCatalogos = useCallback(async () => {
     try {
@@ -898,7 +914,7 @@ const startPollingFirma = () => {
           style={tw`bg-white rounded-full p-2.5 items-center justify-center`}
           activeOpacity={0.7}
         >
-          <Ionicons name="arrow-back" size={20} color="#0140CD" />
+          <Ionicons name="arrow-back" size={20} color="#007bff" />
         </TouchableOpacity>
       </View>
 
@@ -947,8 +963,8 @@ const startPollingFirma = () => {
             <View style={tw`w-full`}>
               <View style={tw`px-4 py-2`}>
                 <View style={tw`flex-row items-center mb-2`}>
-                  <Ionicons name="cube-outline" size={20} color="#0140CD" style={tw`mr-1`} />
-                  <Text style={tw`text-[#0140CD] font-bold text-lg`}>
+                  <Ionicons name="cube-outline" size={20} color="#007bff" style={tw`mr-1`} />
+                  <Text style={tw`text-[#007bff] font-bold text-lg`}>
                     Envío #{envio.id_envio}
                   </Text>
                 </View>
@@ -981,7 +997,7 @@ const startPollingFirma = () => {
                 <Text style={tw`text-black text-lg font-bold`}>
                   Asignación Nº {envio.id_asignacion}
                 </Text>
-                {(envio.estado?.toLowerCase() === 'en curso' || envio.estado?.toLowerCase() === 'parcialmente entregado') && (
+                {(isEnCurso(envio) || isParcial(envio)) && (
                   <View style={tw`flex-row items-center`}>
                     <TouchableOpacity 
                       onPress={handleShowFirmaModal} 
@@ -990,11 +1006,11 @@ const startPollingFirma = () => {
                       <Ionicons 
                         name="create-outline" 
                         size={24} 
-                        color={hasFirmaTransportista ? "#999" : "#0140CD"} 
+                        color={hasFirmaTransportista ? "#999" : "#007bff"} 
                       />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={openQRModal} style={tw`pl-2`}>
-                      <Ionicons name="qr-code-outline" size={24} color="#0140CD" />
+                      <Ionicons name="qr-code-outline" size={24} color="#007bff" />
                     </TouchableOpacity>
                   </View>
                 )}
@@ -1002,41 +1018,41 @@ const startPollingFirma = () => {
               <Text style={tw`text-black text-base mb-6`}><Text style={tw`text-green-600`}>{envio.estado || envio.estado_envio}</Text></Text>
             
               <Text style={tw`text-black text-base mb-2.5 flex-row items-center`}>
-                <Ionicons name="car-outline" size={18} color="#0140CD" style={tw`mr-1`}/> Transporte: {envio.tipo_transporte}
+                <Ionicons name="car-outline" size={18} color="#007bff" style={tw`mr-1`}/> Transporte: {envio.tipo_transporte}
               </Text>
               <Text style={tw`text-black text-base mb-2.5 flex-row items-center`}>
-                <Ionicons name="leaf-outline" size={18} color="#0140CD" style={tw`mr-1`}/> Variedad: {envio.cargas?.[0]?.variedad}
+                <Ionicons name="leaf-outline" size={18} color="#007bff" style={tw`mr-1`}/> Variedad: {envio.cargas?.[0]?.variedad}
               </Text>
               <Text style={tw`text-black text-base mb-2.5 flex-row items-center`}>
-                <Ionicons name="scale-outline" size={18} color="#0140CD" style={tw`mr-1`}/> Peso: {envio.cargas?.[0]?.peso ?? '—'} kg
+                <Ionicons name="scale-outline" size={18} color="#007bff" style={tw`mr-1`}/> Peso: {envio.cargas?.[0]?.peso ?? '—'} kg
               </Text>
               <Text style={tw`text-black text-base mb-2.5 flex-row items-center`}>
-                <Ionicons name="calculator-outline" size={18} color="#0140CD" style={tw`mr-1`}/> Cantidad: {envio.cargas?.[0]?.cantidad ?? '—'}
+                <Ionicons name="calculator-outline" size={18} color="#007bff" style={tw`mr-1`}/> Cantidad: {envio.cargas?.[0]?.cantidad ?? '—'}
               </Text>
               {/* ubicación origen y destino */}
               <View style={tw`mb-2.5`}>
                 <Text style={tw`text-black text-base flex-row items-center`}>
-                  <Ionicons name="location-outline" size={18} color="#0140CD" style={tw`mr-1`} />
+                  <Ionicons name="location-outline" size={18} color="#007bff" style={tw`mr-1`} />
                   <Text style={tw`font-bold`}>Origen: </Text>
                   {envio.nombre_origen}
                 </Text>
                 <Text style={tw`text-black text-base flex-row items-center mt-1`}>
-                  <Ionicons name="location-outline" size={18} color="#0140CD" style={tw`mr-1`} />
+                  <Ionicons name="location-outline" size={18} color="#007bff" style={tw`mr-1`} />
                   <Text style={tw`font-bold`}>Destino: </Text>
                   {envio.nombre_destino}
                 </Text>
               </View>
 
               {/* --- CHECKLIST CONDICIONES --- */}
-              {(envio.estado?.toLowerCase() === 'pendiente') && !showConditions && (
+              {isPendiente(envio) && !showConditions && (
                 <View style={tw`mt-6 mb-10`}>
                   <TouchableOpacity
-                    style={tw`bg-[#0140CD] p-4 rounded-xl items-center mb-3`}
+                    style={tw`bg-[#007bff] p-4 rounded-xl items-center mb-3`}
                     onPress={() => setShowConditionsModal(true)}>
                     <Text style={tw`text-white font-semibold text-base`}>Registro de condiciones de Transporte</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={tw`bg-[#0140CD] p-4 rounded-xl items-center`}
+                    style={tw`bg-[#007bff] p-4 rounded-xl items-center`}
                     onPress={() => {
                       if (allAnswered(conditions)) {
                         handleConfirmTrip();
@@ -1052,10 +1068,10 @@ const startPollingFirma = () => {
               {showConditions && (
                 <>
                   <View style={tw`mt-5 mb-3`}>
-                    <Text style={tw`text-[#0140CD] text-lg font-semibold`}>Registro de condiciones</Text>
+                    <Text style={tw`text-[#007bff] text-lg font-semibold`}>Registro de condiciones</Text>
                   </View>
                   <TextInput
-                    style={tw`bg-white border-[#0140CD] border-2 rounded-xl p-3 text-black text-base min-h-[80px] mb-4`}
+                    style={tw`bg-white border-[#007bff] border-2 rounded-xl p-3 text-black text-base min-h-[80px] mb-4`}
                     placeholder="Observaciones" 
                     placeholderTextColor="#666"
                     multiline 
@@ -1067,20 +1083,20 @@ const startPollingFirma = () => {
                       <Text style={tw`flex-1 text-black text-base`}>{getTituloCondicion(k)}</Text>
                       <View style={tw`flex-row gap-2`}>
                         <Pressable 
-                          style={tw`py-1.5 px-4 rounded-full border border-[#0140CD] ${v===true ? 'bg-[#0140CD]' : ''}`}
+                          style={tw`py-1.5 px-4 rounded-full border border-[#007bff] ${v===true ? 'bg-[#007bff]' : ''}`}
                           onPress={()=>setAnswer(setConditions,k,true)}>
-                          <Text style={tw`${v===true ? 'text-white' : 'text-[#0140CD]'} font-semibold`}>Sí</Text>
+                          <Text style={tw`${v===true ? 'text-white' : 'text-[#007bff]'} font-semibold`}>Sí</Text>
                         </Pressable>
                         <Pressable 
-                          style={tw`py-1.5 px-4 rounded-full border border-[#0140CD] ${v===false ? 'bg-[#0140CD]' : ''}`}
+                          style={tw`py-1.5 px-4 rounded-full border border-[#007bff] ${v===false ? 'bg-[#007bff]' : ''}`}
                           onPress={()=>setAnswer(setConditions,k,false)}>
-                          <Text style={tw`${v===false ? 'text-white' : 'text-[#0140CD]'} font-semibold`}>No</Text>
+                          <Text style={tw`${v===false ? 'text-white' : 'text-[#007bff]'} font-semibold`}>No</Text>
                         </Pressable>
                       </View>
                     </View>
                   ))}
                   <TouchableOpacity 
-                    style={tw`bg-[#0140CD] p-4 rounded-xl items-center mt-6 mb-10`} 
+                    style={tw`bg-[#007bff] p-4 rounded-xl items-center mt-6 mb-10`} 
                     onPress={handleConfirmTrip}>
                     <Text style={tw`text-white font-semibold text-base`}>Confirmar viaje</Text>
                   </TouchableOpacity>
@@ -1088,7 +1104,7 @@ const startPollingFirma = () => {
               )}
 
               {/* --- CHECKLIST INCIDENTES --- */}
-              {(envio.estado?.toLowerCase() === 'en curso' || envio.estado?.toLowerCase() === 'parcialmente entregado') &&
+              {(isEnCurso(envio) || isParcial(envio)) &&
                 !showIncidents && !showConditions && (
                 <View style={tw`mt-6 mb-10`}>
                   <TouchableOpacity 
@@ -1152,7 +1168,7 @@ const startPollingFirma = () => {
               )}
 
               {/* COMPLETADO */}
-              {envio.estado_envio.toLowerCase()==='completado' && (
+              {isCompletado(envio) && (
                 <View style={tw`items-center py-8`}>
                   <Ionicons name="checkmark-circle" size={64} color="#28a745"/>
                   <Text style={tw`text-black text-lg font-semibold mt-4`}>¡Entrega completada con éxito!</Text>
@@ -1214,7 +1230,7 @@ const startPollingFirma = () => {
                 <Text style={tw`text-black text-lg font-bold`}>
                   Asignación Nº {envio.id_asignacion}
                 </Text>
-                {(envio.estado?.toLowerCase() === 'en curso' || envio.estado?.toLowerCase() === 'parcialmente entregado') && (
+                {(isEnCurso(envio) || isParcial(envio)) && (
                   <View style={tw`flex-row items-center`}>
                     <TouchableOpacity 
                       onPress={handleShowFirmaModal} 
@@ -1260,7 +1276,7 @@ const startPollingFirma = () => {
               </View>
 
               {/* --- CHECKLIST CONDICIONES --- */}
-              {(envio.estado?.toLowerCase() === 'pendiente') && !showConditions && (
+              {isPendiente(envio) && !showConditions && (
                 <View style={tw`mt-6 mb-10`}>
                   <TouchableOpacity
                     style={tw`bg-[#0140CD] p-4 rounded-xl items-center mb-3`}
@@ -1284,7 +1300,7 @@ const startPollingFirma = () => {
               {showConditions && (
                 <>
                   <View style={tw`mt-5 mb-3`}>
-                    <Text style={tw`text-[#0140CD] text-lg font-semibold`}>Registro de condiciones de Transporte</Text>
+                    <Text style={tw`text-blue-600 text-lg font-semibold`}>Registro de condiciones de Transporte</Text>
                   </View>
                   <TextInput
                     style={tw`bg-white border-[#0140CD] border-2 rounded-xl p-3 text-black text-base min-h-[80px] mb-4`}
@@ -1320,7 +1336,7 @@ const startPollingFirma = () => {
               )}
 
               {/* --- CHECKLIST INCIDENTES --- */}
-              {(envio.estado?.toLowerCase() === 'en curso' || envio.estado?.toLowerCase() === 'parcialmente entregado') &&
+              {(isEnCurso(envio) || isParcial(envio)) &&
                 !showIncidents && !showConditions && (
                 <View style={tw`mt-6 mb-10`}>
                   <TouchableOpacity 
@@ -1384,7 +1400,7 @@ const startPollingFirma = () => {
               )}
 
               {/* COMPLETADO */}
-              {envio.estado_envio.toLowerCase()==='completado' && (
+              {isCompletado(envio) && (
                 <View style={tw`items-center py-8`}>
                   <Ionicons name="checkmark-circle" size={64} color="#28a745"/>
                   <Text style={tw`text-black text-lg font-semibold mt-4`}>¡Entrega completada con éxito!</Text>
@@ -1406,10 +1422,10 @@ const startPollingFirma = () => {
         }}>
         <View style={tw`flex-1 bg-black bg-opacity-45 justify-center items-center p-6`}>
           <View style={tw`bg-white rounded-2xl p-6 w-full items-center`}>
-            <Text style={tw`text-lg font-bold text-[#0140CD] mb-2`}>Escanea este QR</Text>
+            <Text style={tw`text-lg font-bold text-[#007bff] mb-2`}>Escanea este QR</Text>
 
             {qrLoading && !qrImg && (
-              <ActivityIndicator size="large" color="#0140CD" style={tw`my-8`}/>
+              <ActivityIndicator size="large" color="#007bff" style={tw`my-8`}/>
             )}
 
             {!qrLoading && qrImg && (
@@ -1421,7 +1437,7 @@ const startPollingFirma = () => {
             )}
 
             <TouchableOpacity 
-              style={tw`bg-[#0140CD] py-3 px-6 rounded-xl mt-2`}
+              style={tw`bg-[#007bff] py-3 px-6 rounded-xl mt-2`}
               onPress={()=>{
                 stopPolling?.();
                 setShowQRModal(false);
@@ -1443,15 +1459,15 @@ const startPollingFirma = () => {
         <View style={tw`flex-1 bg-black bg-opacity-45 justify-center items-center p-6`}>
           <View style={tw`bg-white rounded-2xl p-6 w-full max-h-[60%] flex-1`}>
             <View style={tw`flex-row justify-between items-center mb-4`}>
-              <Text style={tw`text-[#0140CD] text-xl font-bold`}>Registro de incidentes</Text>
+              <Text style={tw`text-[#007bff] text-xl font-bold`}>Registro de incidentes</Text>
               <TouchableOpacity onPress={() => setShowIncidentsModal(false)}>
-                <Ionicons name="close" size={24} color="#0140CD" />
+                <Ionicons name="close" size={24} color="#007bff" />
               </TouchableOpacity>
             </View>
             <View style={tw`flex-1`}>
               <ScrollView style={tw``} contentContainerStyle={tw`pb-2`}>
                 <TextInput
-                  style={tw`bg-white border-[#0140CD] border-2 rounded-xl p-3 text-black text-base min-h-[80px] mb-4`}
+                  style={tw`bg-white border-[#007bff] border-2 rounded-xl p-3 text-black text-base min-h-[80px] mb-4`}
                   placeholder="Descripción del incidente"
                   placeholderTextColor="#666"
                   multiline
@@ -1463,14 +1479,14 @@ const startPollingFirma = () => {
                     <Text style={tw`flex-1 text-black text-base`}>{getTituloIncidente(k)}</Text>
                     <View style={tw`flex-row gap-2`}>
                       <Pressable
-                        style={tw`py-1.5 px-4 rounded-full border border-[#0140CD] ${v===true ? 'bg-[#0140CD]' : ''}`}
+                        style={tw`py-1.5 px-4 rounded-full border border-[#007bff] ${v===true ? 'bg-[#007bff]' : ''}`}
                         onPress={()=>setAnswer(setIncidents,k,true)}>
-                        <Text style={tw`${v===true ? 'text-white' : 'text-[#0140CD]'} font-semibold`}>Sí</Text>
+                        <Text style={tw`${v===true ? 'text-white' : 'text-[#007bff]'} font-semibold`}>Sí</Text>
                       </Pressable>
                       <Pressable
-                        style={tw`py-1.5 px-4 rounded-full border border-[#0140CD] ${v===false ? 'bg-[#0140CD]' : ''}`}
+                        style={tw`py-1.5 px-4 rounded-full border border-[#007bff] ${v===false ? 'bg-[#007bff]' : ''}`}
                         onPress={()=>setAnswer(setIncidents,k,false)}>
-                        <Text style={tw`${v===false ? 'text-white' : 'text-[#0140CD]'} font-semibold`}>No</Text>
+                        <Text style={tw`${v===false ? 'text-white' : 'text-[#007bff]'} font-semibold`}>No</Text>
                       </Pressable>
                     </View>
                   </View>
@@ -1478,7 +1494,7 @@ const startPollingFirma = () => {
               </ScrollView>
             </View>
             <TouchableOpacity
-              style={tw`bg-[#0140CD] p-4 rounded-xl items-center mt-4`}
+              style={tw`bg-[#007bff] p-4 rounded-xl items-center mt-4`}
               onPress={() => {
                 if (!allAnswered(incidents)) {
                   setShowChecklistIncompleteAlert(true);
@@ -1498,8 +1514,8 @@ const startPollingFirma = () => {
       <Modal transparent visible={showIncidentStartModal} animationType="fade" onRequestClose={()=>setShowIncidentStartModal(false)}>
         <View style={tw`flex-1 bg-black bg-opacity-45 justify-center items-center p-6`}>
           <View style={tw`bg-white rounded-2xl p-6 w-full items-center`}>
-            <Ionicons name="alert-circle-outline" size={64} color="#0140CD" style={tw`mb-3`}/>
-            <Text style={tw`text-xl font-bold text-[#0140CD] mb-2 text-center`}>Registro de incidentes</Text>
+            <Ionicons name="alert-circle-outline" size={64} color="#007bff" style={tw`mb-3`}/>
+            <Text style={tw`text-xl font-bold text-[#007bff] mb-2 text-center`}>Registro de incidentes</Text>
             <Text style={tw`text-base text-gray-800 text-center mb-5`}>
               Debes completar el registro de incidentes antes de finalizar este envío.
               Por favor, responde a todas las preguntas y describe cualquier incidencia ocurrida durante el trayecto.
@@ -1511,7 +1527,7 @@ const startPollingFirma = () => {
                 <Text style={tw`text-white font-semibold text-base`}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={tw`bg-[#0140CD] py-3 px-6 rounded-xl`}
+                style={tw`bg-[#007bff] py-3 px-6 rounded-xl`}
                 onPress={()=>{
                   setShowIncidentStartModal(false);
                   setShowIncidentsModal(true);
@@ -1559,7 +1575,7 @@ const startPollingFirma = () => {
               Pide al cliente que escanee el QR y firme para poder finalizar el envío.
             </Text>
             <TouchableOpacity
-              style={tw`bg-[#0140CD] py-3 px-6 rounded-xl mt-2`}
+              style={tw`bg-[#007bff] py-3 px-6 rounded-xl mt-2`}
               onPress={() => setShowFirmaBackendModal(false)}
             >
               <Text style={tw`text-white font-semibold text-base`}>Entendido</Text>
@@ -1572,8 +1588,8 @@ const startPollingFirma = () => {
       <Modal transparent visible={showConditionsAlert} animationType="fade" onRequestClose={()=>setShowConditionsAlert(false)}>
         <View style={tw`flex-1 bg-black bg-opacity-45 justify-center items-center p-6`}>
           <View style={tw`bg-white rounded-2xl p-6 w-full items-center`}>
-            <Ionicons name="alert-circle-outline" size={64} color="#0140CD" style={tw`mb-3`}/>
-            <Text style={tw`text-xl font-bold text-[#0140CD] mb-2 text-center`}>Registro de Condiciones</Text>
+            <Ionicons name="alert-circle-outline" size={64} color="#007bff" style={tw`mb-3`}/>
+            <Text style={tw`text-xl font-bold text-[#007bff] mb-2 text-center`}>Registro de Condiciones</Text>
             <Text style={tw`text-base text-gray-800 text-center mb-5`}>
               Debes completar el registro de condiciones de transporte antes de iniciar el viaje.
               Por favor, responde a todas las preguntas.
@@ -1585,7 +1601,7 @@ const startPollingFirma = () => {
                 <Text style={tw`text-white font-semibold text-base`}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={tw`bg-[#0140CD] py-3 px-6 rounded-xl`}
+                style={tw`bg-[#007bff] py-3 px-6 rounded-xl`}
                 onPress={()=>{
                   setShowConditionsAlert(false);
                   setShowConditionsModal(true);
@@ -1652,7 +1668,7 @@ const startPollingFirma = () => {
               Has completado el registro de incidentes correctamente.
             </Text>
             <TouchableOpacity 
-              style={tw`bg-[#0140CD] py-3 px-6 rounded-xl`}
+              style={tw`bg-[#007bff] py-3 px-6 rounded-xl`}
               onPress={() => {
                 setShowChecklistCompleteModal(false);
                 setTimeout(() => {
@@ -1690,7 +1706,7 @@ const startPollingFirma = () => {
         </View>
       </Modal>
 
-      {/* Modal de Checklist de Condiciones */}
+      {/* ESTE CHECKLIST DE CONDICIONES SI FUNCIONA SOLO ESTE*/}
       <Modal
         transparent
         visible={showConditionsModal}
@@ -1700,15 +1716,15 @@ const startPollingFirma = () => {
         <View style={tw`flex-1 bg-black bg-opacity-45 justify-center items-center p-6`}>
           <View style={tw`bg-white rounded-2xl p-6 w-full max-h-[60%] flex-1`}>
             <View style={tw`flex-row justify-between items-center mb-4`}>
-              <Text style={tw`text-[#0140CD] text-xl font-bold`}>Registro de condiciones</Text>
+              <Text style={tw`text-[#007bff] text-xl font-bold`}>Registro de condiciones</Text>
               <TouchableOpacity onPress={() => setShowConditionsModal(false)}>
-                <Ionicons name="close" size={24} color="#0140CD" />
+                <Ionicons name="close" size={24} color="#007bff" />
               </TouchableOpacity>
             </View>
             <View style={tw`flex-1`}>
               <ScrollView style={tw``} contentContainerStyle={tw`pb-2`}>
                 <TextInput
-                  style={tw`bg-white border-[#0140CD] border-2 rounded-xl p-3 text-black text-base min-h-[80px] mb-4`}
+                  style={tw`bg-white border-[#007bff] border-2 rounded-xl p-3 text-black text-base min-h-[80px] mb-4`}
                   placeholder="Observaciones"
                   placeholderTextColor="#666"
                   multiline
@@ -1720,14 +1736,14 @@ const startPollingFirma = () => {
                     <Text style={tw`flex-1 text-black text-base`}>{getTituloCondicion(k)}</Text>
                     <View style={tw`flex-row gap-2`}>
                       <Pressable
-                        style={tw`py-1.5 px-4 rounded-full border border-[#0140CD] ${v===true ? 'bg-[#0140CD]' : ''}`}
+                        style={tw`py-1.5 px-4 rounded-full border border-[#007bff] ${v===true ? 'bg-[#007bff]' : ''}`}
                         onPress={()=>setAnswer(setConditions,k,true)}>
-                        <Text style={tw`${v===true ? 'text-white' : 'text-[#0140CD]'} font-semibold`}>Sí</Text>
+                        <Text style={tw`${v===true ? 'text-white' : 'text-[#007bff]'} font-semibold`}>Sí</Text>
                       </Pressable>
                       <Pressable
-                        style={tw`py-1.5 px-4 rounded-full border border-[#0140CD] ${v===false ? 'bg-[#0140CD]' : ''}`}
+                        style={tw`py-1.5 px-4 rounded-full border border-[#007bff] ${v===false ? 'bg-[#007bff]' : ''}`}
                         onPress={()=>setAnswer(setConditions,k,false)}>
-                        <Text style={tw`${v===false ? 'text-white' : 'text-[#0140CD]'} font-semibold`}>No</Text>
+                        <Text style={tw`${v===false ? 'text-white' : 'text-[#007bff]'} font-semibold`}>No</Text>
                       </Pressable>
                     </View>
                   </View>
@@ -1735,7 +1751,7 @@ const startPollingFirma = () => {
               </ScrollView>
             </View>
             <TouchableOpacity
-              style={tw`bg-[#0140CD] p-4 rounded-xl items-center mt-4`}
+              style={tw`bg-[#007bff] p-4 rounded-xl items-center mt-4`}
               onPress={() => {
                 if (!allAnswered(conditions)) {
                   setShowConditionsIncompleteAlert(true);
@@ -1800,7 +1816,7 @@ const startPollingFirma = () => {
               Debes completar todo el registro de condiciones de transporte antes de confirmar.
             </Text>
             <TouchableOpacity
-              style={tw`bg-[#0140CD] py-3 px-6 rounded-xl`}
+              style={tw`bg-[#007bff] py-3 px-6 rounded-xl`}
               onPress={()=>setShowConditionsIncompleteAlert(false)}>
               <Text style={tw`text-white font-semibold text-base`}>Entendido</Text>
             </TouchableOpacity>
@@ -1818,9 +1834,9 @@ const startPollingFirma = () => {
         <View style={tw`flex-1 bg-black bg-opacity-45 justify-center items-center p-6`}>
           <View style={tw`bg-white rounded-2xl p-6 w-full h-[80%]`}>
             <View style={tw`flex-row justify-between items-center mb-4`}>
-              <Text style={tw`text-[#0140CD] text-xl font-bold`}>Firma del Transportista</Text>
+              <Text style={tw`text-[#007bff] text-xl font-bold`}>Firma del Transportista</Text>
               <TouchableOpacity onPress={() => setShowFirmaModal(false)}>
-                <Ionicons name="close" size={24} color="#0140CD" />
+                <Ionicons name="close" size={24} color="#007bff" />
               </TouchableOpacity>
             </View>
 
@@ -1848,8 +1864,8 @@ const startPollingFirma = () => {
             </View>
 
             <View style={tw`items-center mb-15 -mt-6 px-2`}> 
-              <FontAwesome5 name="truck" size={36} color="#0140CD" style={tw`mb-2`} />
-              <Text style={tw`text-[#0140CD] text-lg font-semibold text-center mb-1`}>Certificación de Entrega</Text>
+              <FontAwesome5 name="truck" size={36} color="#007bff" style={tw`mb-2`} />
+              <Text style={tw`text-[#007bff] text-lg font-semibold text-center mb-1`}>Certificación de Entrega</Text>
               <Text style={tw`text-gray-800 text-base text-center font-medium`}>
                 Por favor, firme para certificar que la entrega fue realizada correctamente y conforme a los términos del envío.
               </Text>
@@ -1869,7 +1885,7 @@ const startPollingFirma = () => {
               <TouchableOpacity
                 style={[
                   tw`py-3 px-6 rounded-xl`,
-                  (isConfirmButtonDisabled || isProcessingFirma) ? tw`bg-gray-400` : tw`bg-[#0140CD]`
+                  (isConfirmButtonDisabled || isProcessingFirma) ? tw`bg-gray-400` : tw`bg-[#007bff]`
                 ]}
                 onPress={() => {
                   if (!isConfirmButtonDisabled && !isProcessingFirma && signatureRef.current) {
@@ -1933,7 +1949,7 @@ const startPollingFirma = () => {
               La entrega ha sido certificada correctamente.
             </Text>
             <TouchableOpacity
-              style={tw`bg-[#0140CD] py-3 px-6 rounded-xl`}
+              style={tw`bg-[#007bff] py-3 px-6 rounded-xl`}
               onPress={() => setShowFirmaRegistradaModal(false)}
             >
               <Text style={tw`text-white font-semibold text-base`}>Entendido</Text>
@@ -1951,13 +1967,13 @@ const startPollingFirma = () => {
       >
         <View style={tw`flex-1 bg-black bg-opacity-45 justify-center items-center p-6`}>
           <View style={tw`bg-white rounded-2xl p-6 w-full items-center`}>
-            <Ionicons name="checkmark-circle-outline" size={64} color="#0140CD" style={tw`mb-3`}/>
-            <Text style={tw`text-xl font-bold text-[#0140CD] mb-2 text-center`}>¡Ya has firmado este envío!</Text>
+            <Ionicons name="checkmark-circle-outline" size={64} color="#007bff" style={tw`mb-3`}/>
+            <Text style={tw`text-xl font-bold text-[#007bff] mb-2 text-center`}>¡Ya has firmado este envío!</Text>
             <Text style={tw`text-base text-gray-800 text-center mb-5`}>
               No es posible firmar nuevamente este envío ya que tu firma ha sido registrada previamente.
             </Text>
             <TouchableOpacity
-              style={tw`bg-[#0140CD] py-3 px-6 rounded-xl`}
+              style={tw`bg-[#007bff] py-3 px-6 rounded-xl`}
               onPress={() => setShowYaFirmadoModal(false)}
             >
               <Text style={tw`text-white font-semibold text-base`}>Entendido</Text>
@@ -1999,13 +2015,13 @@ const startPollingFirma = () => {
       >
         <View style={tw`flex-1 bg-black bg-opacity-45 justify-center items-center p-6`}>
           <View style={tw`bg-white rounded-2xl p-6 w-full items-center`}>
-            <Ionicons name="alert-circle-outline" size={64} color="#0140CD" style={tw`mb-3`}/>
-            <Text style={tw`text-xl font-bold text-[#0140CD] mb-2 text-center`}>Firma Requerida</Text>
+            <Ionicons name="alert-circle-outline" size={64} color="#007bff" style={tw`mb-3`}/>
+            <Text style={tw`text-xl font-bold text-[#007bff] mb-2 text-center`}>Firma Requerida</Text>
             <Text style={tw`text-base text-gray-800 text-center mb-5`}>
               No puedes confirmar el envío sin firmar. Por favor, intenta nuevamente.
             </Text>
             <TouchableOpacity
-              style={tw`bg-[#0140CD] py-3 px-6 rounded-xl`}
+              style={tw`bg-[#007bff] py-3 px-6 rounded-xl`}
               onPress={() => {
                 setShowFirmaRequeridaModal(false);
                 setShowFirmaModal(true);
@@ -2026,8 +2042,8 @@ const startPollingFirma = () => {
       >
         <View style={tw`flex-1 bg-black bg-opacity-45 justify-center items-center p-6`}>
           <View style={tw`bg-white rounded-2xl p-6 w-full items-center`}>
-            <Ionicons name="finger-print-outline" size={64} color="#0140CD" style={tw`mb-3`}/>
-            <Text style={tw`text-xl font-bold text-[#0140CD] mb-2 text-center`}>Firma del Transportista</Text>
+            <Ionicons name="finger-print-outline" size={64} color="#007bff" style={tw`mb-3`}/>
+            <Text style={tw`text-xl font-bold text-[#007bff] mb-2 text-center`}>Firma del Transportista</Text>
             <Text style={tw`text-base text-gray-800 text-center mb-5`}>
               Ahora que el cliente ha firmado, necesitamos tu firma para certificar la entrega y finalizar el proceso.
             </Text>
@@ -2039,7 +2055,7 @@ const startPollingFirma = () => {
                 <Text style={tw`text-white font-semibold text-base`}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={tw`bg-[#0140CD] py-3 px-6 rounded-xl`}
+                style={tw`bg-[#007bff] py-3 px-6 rounded-xl`}
                 onPress={() => {
                   setShowFirmaTransportistaAlert(false);
                   setShowFirmaModal(true);
