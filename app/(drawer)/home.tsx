@@ -291,6 +291,19 @@ export default function HomeScreen() {
         ) : enviosFiltrados.length === 0 ? (
           <View style={tw`flex-1 justify-center items-center`}>
             <Text style={tw`text-gray-600 text-lg`}>No hay envíos para mostrar</Text>
+            <Text style={tw`text-gray-500 text-sm mt-2`}>Pulsa recargar para intentar de nuevo.</Text>
+            <TouchableOpacity
+              style={tw`mt-4 bg-[#0140CD] py-2 px-4 rounded-full flex-row items-center`}
+              onPress={onRefresh}
+              disabled={refreshing}
+            >
+              {refreshing ? (
+                <ActivityIndicator size="small" color="#ffffff" style={tw`mr-2`} />
+              ) : (
+                <Ionicons name="refresh" size={16} color="#ffffff" style={tw`mr-2`} />
+              )}
+              <Text style={tw`text-white font-semibold`}>{refreshing ? 'Actualizando...' : 'Recargar'}</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <FlatList

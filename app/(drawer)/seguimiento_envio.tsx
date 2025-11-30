@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import tw from 'twrnc';
@@ -80,6 +81,7 @@ export default function SeguimientoEnvio() {
   const [mapaCompleto, setMapaCompleto] = useState<{ visible: boolean, index: number | null }>({ visible: false, index: null });
   const [camionAnimado, setCamionAnimado] = useState<{ [key: number]: { latitude: number, longitude: number, rotation: number } }>({});
   const animacionRefs = useRef<{ [key: number]: Animated.Value }>({});
+  const [copied, setCopied] = useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -449,6 +451,18 @@ export default function SeguimientoEnvio() {
     return `${horas}:${minutos}`;
   };
 
+  const handleCopyCodigo = async (code?: string) => {
+    const theCode = code || (envio as any)?.codigo_acceso;
+    if (!theCode) return;
+    try {
+      await Clipboard.setStringAsync(theCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (e) {
+      Alert.alert('Error', 'No se pudo copiar el código');
+    }
+  };
+
   if (loading) {
     return (
       <View style={tw`flex-1 bg-gray-100 justify-center items-center`}>
@@ -593,7 +607,7 @@ export default function SeguimientoEnvio() {
                     {renderCamionMarker(index)}
                   </MapView>
                   
-                  {/* Indicador de carga de ruta */}
+                    {/* Indicador de carga de ruta */}
                   {cargandoRutas[index] && (
                     <View style={tw`absolute bottom-2 right-2 bg-white rounded-full p-2 shadow-md`}>
                       <ActivityIndicator size="small" color="#0077b6" />
@@ -602,6 +616,20 @@ export default function SeguimientoEnvio() {
                 </View>
               </TouchableOpacity>
             </View>
+
+            {/* Código de acceso (centrado debajo del mapa) */}
+            {((particion as any)?.codigo_acceso || (envio as any)?.codigo_acceso) ? (
+              <View style={tw`items-center mb-4`}> 
+                <Text style={tw`text-base text-black font-bold mb-2`}>Código de acceso</Text>
+                <View style={tw`flex-row items-center justify-center`}> 
+                  <Text selectable style={tw`self-start text-lg font-bold text-black py-1 px-3 rounded-md border border-black bg-white`}>{(particion as any)?.codigo_acceso || (envio as any).codigo_acceso}</Text>
+                  <TouchableOpacity onPress={() => handleCopyCodigo((particion as any)?.codigo_acceso || (envio as any).codigo_acceso)} style={tw`ml-3 p-2 bg-white rounded-full border border-gray-200`}> 
+                    <Ionicons name="copy-outline" size={20} color="#212529" />
+                  </TouchableOpacity>
+                </View>
+                {copied && <Text style={tw`text-sm text-green-600 mt-2`}>Copiado al portapapeles</Text>}
+              </View>
+            ) : null}
 
             {/* Información del Transportista */}
             <View style={tw`mb-6`}>

@@ -141,6 +141,8 @@ export default function DetalleEnvioView() {
 
   /* ---------- helpers para normalizar estados de envío ---------- */
   const estadoNormalized = (e:any) => {
+    // Preferir valor ya normalizado si existe (evita recalcular varias veces)
+    if (e?._estado_normalizado) return e._estado_normalizado;
     const raw = ((e?.estado ?? e?.estado_envio) || '').toString().toLowerCase().trim();
     if (!raw) return '';
     if (raw.includes('complet') || raw.includes('entreg') || raw.includes('finaliz')) return 'completado';
@@ -154,6 +156,13 @@ export default function DetalleEnvioView() {
   const isParcial = (e:any) => estadoNormalized(e) === 'parcialmente entregado';
   const isPendiente = (e:any) => estadoNormalized(e) === 'pendiente';
   const isCompletado = (e:any) => estadoNormalized(e) === 'completado';
+
+  const isEntregadoRaw = (e:any) => {
+    try{
+      const raw = ((e?.estado ?? e?.estado_envio) || '').toString().toLowerCase();
+      return raw.includes('entreg');
+    }catch{ return false; }
+  };
 
   /* ---------- cargar catálogos desde el backend ---------- */
   const cargarCatalogos = useCallback(async () => {
@@ -283,6 +292,14 @@ export default function DetalleEnvioView() {
       }
       
       console.log('[DetalleEnvioView] Envío encontrado:', found);
+      // Guardar también una versión normalizada del estado para evitar
+      // discrepancias entre `estado` y `estado_envio` y forzar que los helpers
+      // interpreten correctamente el estado.
+      try{
+        const norm = estadoNormalized(found);
+        found._estado_normalizado = norm;
+        console.log('[DetalleEnvioView] Normalized estado:', { rawEstado: found.estado || found.estado_envio, normalized: norm, found });
+      }catch(e){/* ignore */}
       setEnvio(found);
       
       // Actualizar el estado de la firma del transportista
@@ -997,7 +1014,7 @@ const startPollingFirma = () => {
                 <Text style={tw`text-black text-lg font-bold`}>
                   Asignación Nº {envio.id_asignacion}
                 </Text>
-                {(isEnCurso(envio) || isParcial(envio)) && (
+                {(isEnCurso(envio) || isParcial(envio)) && !isCompletado(envio) && !isEntregadoRaw(envio) && (
                   <View style={tw`flex-row items-center`}>
                     <TouchableOpacity 
                       onPress={handleShowFirmaModal} 
@@ -1041,6 +1058,12 @@ const startPollingFirma = () => {
                   <Text style={tw`font-bold`}>Destino: </Text>
                   {envio.nombre_destino}
                 </Text>
+                {envio.codigo_acceso ? (
+                  <View style={tw`mt-2`}> 
+                    <Text style={tw`text-sm text-black font-bold mb-1`}>Código de acceso</Text>
+                    <Text selectable style={tw`self-start text-lg font-bold text-black py-1 px-3 rounded-md border border-black bg-white`}>{envio.codigo_acceso}</Text>
+                  </View>
+                ) : null}
               </View>
 
               {/* --- CHECKLIST CONDICIONES --- */}
@@ -1104,7 +1127,7 @@ const startPollingFirma = () => {
               )}
 
               {/* --- CHECKLIST INCIDENTES --- */}
-              {(isEnCurso(envio) || isParcial(envio)) &&
+              {(isEnCurso(envio) || isParcial(envio)) && !isCompletado(envio) && !isEntregadoRaw(envio) &&
                 !showIncidents && !showConditions && (
                 <View style={tw`mt-6 mb-10`}>
                   <TouchableOpacity 
@@ -1230,7 +1253,7 @@ const startPollingFirma = () => {
                 <Text style={tw`text-black text-lg font-bold`}>
                   Asignación Nº {envio.id_asignacion}
                 </Text>
-                {(isEnCurso(envio) || isParcial(envio)) && (
+                {(isEnCurso(envio) || isParcial(envio)) && !isCompletado(envio) && !isEntregadoRaw(envio) && (
                   <View style={tw`flex-row items-center`}>
                     <TouchableOpacity 
                       onPress={handleShowFirmaModal} 
@@ -1273,6 +1296,12 @@ const startPollingFirma = () => {
                   <Text style={tw`font-bold`}>Destino: </Text>
                   {envio.nombre_destino}
                 </Text>
+                {envio.codigo_acceso ? (
+                  <View style={tw`mt-2`}> 
+                    <Text style={tw`text-sm text-black font-bold mb-1`}>Código de acceso</Text>
+                    <Text selectable style={tw`self-start text-lg font-bold text-black py-1 px-3 rounded-md border border-black bg-white`}>{envio.codigo_acceso}</Text>
+                  </View>
+                ) : null}
               </View>
 
               {/* --- CHECKLIST CONDICIONES --- */}
