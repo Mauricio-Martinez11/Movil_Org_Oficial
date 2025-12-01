@@ -844,8 +844,8 @@ export default function UbicacionesGuardadasScreen() {
                     style={tw`flex-row items-center justify-end`}
                     onPress={() => setShowCoordinates(!showCoordinates)}
                   >
-                    <Ionicons name="eye" size={16} color="#0140CD" />
-                    <Text style={tw`ml-1 text-sm text-[#0140CD]`}>MOSTRAR COORDENADAS</Text>
+                    <Ionicons name="eye" size={16} color="#007bff" />
+                    <Text style={tw`ml-1 text-sm text-[#007bff]`}>MOSTRAR COORDENADAS</Text>
                   </Pressable>
 
                   {showCoordinates && (

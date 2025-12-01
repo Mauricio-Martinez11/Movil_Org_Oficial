@@ -286,14 +286,14 @@ export default function HomeScreen() {
       ) : usuario.rol === 'transportista' && (
         loading ? (
           <View style={tw`flex-1 justify-center items-center`}>
-            <ActivityIndicator size="large" color="#0140CD" />
+            <ActivityIndicator size="large" color="#007bff" />
           </View>
         ) : enviosFiltrados.length === 0 ? (
           <View style={tw`flex-1 justify-center items-center`}>
             <Text style={tw`text-gray-600 text-lg`}>No hay envíos para mostrar</Text>
             <Text style={tw`text-gray-500 text-sm mt-2`}>Pulsa recargar para intentar de nuevo.</Text>
             <TouchableOpacity
-              style={tw`mt-4 bg-[#0140CD] py-2 px-4 rounded-full flex-row items-center`}
+              style={tw`mt-4 bg-[#007bff] py-2 px-4 rounded-full flex-row items-center`}
               onPress={onRefresh}
               disabled={refreshing}
             >
@@ -315,7 +315,7 @@ export default function HomeScreen() {
               <RefreshControl 
                 refreshing={refreshing} 
                 onRefresh={onRefresh} 
-                colors={['#0140CD']} 
+                colors={['#007bff']} 
               />
             }
           />
