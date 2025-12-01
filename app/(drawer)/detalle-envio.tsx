@@ -306,7 +306,7 @@ export default function DetalleEnvioView() {
       if (found.firma_transportista) {
         setFirmaTransportista(true);
         setHasFirmaTransportista(true);
-        setIsConfirmButtonDisabled(true);
+        // NO deshabilitar el botón aquí - el usuario puede necesitar revisar
       }
 
       // Verificar si el cliente ya firmó
@@ -663,13 +663,9 @@ const startPollingFirma = () => {
 
   // Modificar el botón de firma para que esté deshabilitado si ya hay firma
   const handleShowFirmaModal = () => {
-    // Solo permitir firma del transportista si el cliente ya firmó
-    if (!firmaCliente) {
-      setShowQRNeededModal(true);
-      return;
-    }
-
-    if (hasFirmaTransportista) {
+    // Permitir que el transportista firme sin necesidad de firma del cliente primero
+    // El backend validará el orden si es necesario
+    if (hasFirmaTransportista && firmaTransportista) {
       setShowYaFirmadoModal(true);
     } else {
       setShowFirmaModal(true);
@@ -886,7 +882,7 @@ const startPollingFirma = () => {
       // Actualizar el estado local
       setFirmaTransportista(tieneFirma);
       setHasFirmaTransportista(tieneFirma);
-      setIsConfirmButtonDisabled(tieneFirma);
+      // NO deshabilitar el botón aquí - permitir que revise/firme cuando corresponda
       
       return tieneFirma;
     } catch (err) {
@@ -1019,11 +1015,11 @@ const startPollingFirma = () => {
                     <TouchableOpacity 
                       onPress={handleShowFirmaModal} 
                       style={tw`pr-2`}
-                      disabled={hasFirmaTransportista}>
+                      disabled={hasFirmaTransportista && firmaTransportista}>
                       <Ionicons 
                         name="create-outline" 
                         size={24} 
-                        color={hasFirmaTransportista ? "#999" : "#007bff"} 
+                        color={(hasFirmaTransportista && firmaTransportista) ? "#999" : "#007bff"} 
                       />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={openQRModal} style={tw`pl-2`}>
@@ -1258,11 +1254,11 @@ const startPollingFirma = () => {
                     <TouchableOpacity 
                       onPress={handleShowFirmaModal} 
                       style={tw`pr-2`}
-                      disabled={hasFirmaTransportista}>
+                      disabled={hasFirmaTransportista && firmaTransportista}>
                       <Ionicons 
                         name="create-outline" 
                         size={24} 
-                        color={hasFirmaTransportista ? "#999" : "#0140CD"} 
+                        color={(hasFirmaTransportista && firmaTransportista) ? "#999" : "#0140CD"} 
                       />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={openQRModal} style={tw`pl-2`}>
