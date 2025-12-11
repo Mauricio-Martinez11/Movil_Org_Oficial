@@ -32,6 +32,7 @@ type Transportista = {
 type Vehiculo = {
   placa?: string;
   tipo?: string;
+  capacidad?: number;
 };
 
 type TipoTransporte = {
@@ -48,9 +49,11 @@ type RecogidaEntrega = {
 };
 
 type Carga = {
-  tipo: string;
-  variedad: string;
-  peso: number;
+  categoria?: string;
+  producto?: string;
+  peso?: number;
+  cantidad?: number;
+  tipo_empaque?: string;
 };
 
 type Particion = {
@@ -81,12 +84,13 @@ export default function SeguimientoEnvio() {
   const [mapaCompleto, setMapaCompleto] = useState<{ visible: boolean, index: number | null }>({ visible: false, index: null });
   const [camionAnimado, setCamionAnimado] = useState<{ [key: number]: { latitude: number, longitude: number, rotation: number } }>({});
   const animacionRefs = useRef<{ [key: number]: Animated.Value }>({});
+  const mapRefs = useRef<{ [key: number]: MapView | null }>({});
   const [copied, setCopied] = useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
       cargarDatosEnvio();
-      
+
       // Limpiar animaciones al desmontar
       return () => {
         Object.keys(animacionRefs.current).forEach(key => {
@@ -99,12 +103,33 @@ export default function SeguimientoEnvio() {
     }, [])
   );
 
+  // Auto-zoom map when envio data is loaded
+  useEffect(() => {
+    if (envio && envio.coordenadas_origen && envio.coordenadas_destino) {
+      envio.particiones.forEach((_, index) => {
+        setTimeout(() => {
+          const map = mapRefs.current[index];
+          if (map && envio.coordenadas_origen && envio.coordenadas_destino) {
+            const coords = [
+              { latitude: envio.coordenadas_origen[0], longitude: envio.coordenadas_origen[1] },
+              { latitude: envio.coordenadas_destino[0], longitude: envio.coordenadas_destino[1] },
+            ];
+            map.fitToCoordinates(coords, {
+              edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+              animated: true,
+            });
+          }
+        }, 1000); // Delay to ensure map is ready
+      });
+    }
+  }, [envio]);
+
   // Efecto para iniciar animaciones cuando cambien las rutas
   useEffect(() => {
     if (envio && Object.keys(rutaCoordinates).length > 0) {
       envio.particiones.forEach((particion, index) => {
         const estado = particion.estado?.toLowerCase();
-        
+
         if (estado === 'en curso' && rutaCoordinates[index]) {
           // Pequeño delay para asegurar que el mapa esté renderizado
           setTimeout(() => {
@@ -142,7 +167,7 @@ export default function SeguimientoEnvio() {
     const calcularPosicionCamion = (progress: number) => {
       const totalDistance = ruta.length - 1;
       const currentIndex = progress * totalDistance;
-      
+
       const index1 = Math.floor(currentIndex);
       const index2 = Math.min(index1 + 1, ruta.length - 1);
       const fraction = currentIndex - index1;
@@ -189,16 +214,16 @@ export default function SeguimientoEnvio() {
   const obtenerRuta = async (origen: [number, number], destino: [number, number], particionIndex: number) => {
     try {
       setCargandoRutas(prev => ({ ...prev, [particionIndex]: true }));
-      
+
       const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origen[0]},${origen[1]}&destination=${destino[0]},${destino[1]}&key=${getGoogleMapsApiKey()}`;
-      
+
       const response = await fetch(url);
       const data = await response.json();
-      
+
       if (data.routes && data.routes.length > 0) {
         const points = data.routes[0].overview_polyline.points;
         const decodedPoints = decodePolyline(points);
-        
+
         setRutaCoordinates(prev => ({
           ...prev,
           [particionIndex]: decodedPoints
@@ -278,7 +303,7 @@ export default function SeguimientoEnvio() {
 
       const data = await res.json();
       console.log('📦 Envío recibido (API):', JSON.stringify(data, null, 2));
-      
+
       if (!res.ok) {
         throw new Error(data.error || 'Error al obtener envío');
       }
@@ -392,7 +417,7 @@ export default function SeguimientoEnvio() {
   const renderCamionMarker = (particionIndex: number) => {
     const camion = camionAnimado[particionIndex];
     const particion = envio?.particiones[particionIndex];
-    
+
     // Solo mostrar camión si está en curso
     if (!camion || !particion || particion.estado?.toLowerCase() !== 'en curso') {
       return null;
@@ -417,7 +442,7 @@ export default function SeguimientoEnvio() {
             justifyContent: 'center',
           }}
         >
-          <Image 
+          <Image
             source={require('../../assets/camion_ligero.png')}
             style={{ width: 40, height: 40, resizeMode: 'contain' }}
           />
@@ -430,7 +455,12 @@ export default function SeguimientoEnvio() {
 
   const resumenCargas = (particion: Particion) => {
     return (particion.cargas || [])
-      .map(c => `${c.tipo} - ${c.variedad} (${c.peso} kg)`)
+      .map(c => {
+        const cat = c.categoria || 'Sin categoría';
+        const prod = c.producto || 'Sin producto';
+        const peso = c.peso ? `(${c.peso} kg)` : '';
+        return `${cat} - ${prod} ${peso}`;
+      })
       .join(' | ');
   };
 
@@ -443,9 +473,16 @@ export default function SeguimientoEnvio() {
     return `${dia}/${mes}/${año}`;
   };
 
-  const formatearHora = (horaIso?: string) => {
-    if (!horaIso) return '—';
-    const date = new Date(horaIso);
+  const formatearHora = (hora?: string) => {
+    if (!hora) return '—';
+    // Si viene como HH:MM:SS
+    if (hora.includes(':') && hora.length >= 5) {
+      return hora.substring(0, 5);
+    }
+    // Si viene como ISO string
+    const date = new Date(hora);
+    if (isNaN(date.getTime())) return hora; // Fallback
+
     const horas = String(date.getUTCHours()).padStart(2, '0');
     const minutos = String(date.getUTCMinutes()).padStart(2, '0');
     return `${horas}:${minutos}`;
@@ -493,7 +530,7 @@ export default function SeguimientoEnvio() {
   return (
     <View style={tw`flex-1 bg-gray-100`}>
       <StatusBar barStyle="dark-content" />
-      
+
       {/* Header */}
       <View style={tw`flex-row items-center pt-14 px-4 pb-4 bg-white`}>
         <TouchableOpacity onPress={() => router.push('/envio')}>
@@ -523,7 +560,7 @@ export default function SeguimientoEnvio() {
                 {particion.estado?.toLowerCase() === 'en curso' && camionAnimado[index] && (
                   <View style={tw`flex-row items-center mr-3`}>
                     <View style={tw`w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse`} />
-                    <Image 
+                    <Image
                       source={require('../../assets/camion_ligero.png')}
                       style={{ width: 16, height: 16, resizeMode: 'contain' }}
                     />
@@ -542,6 +579,7 @@ export default function SeguimientoEnvio() {
               <TouchableOpacity onPress={() => setMapaCompleto({ visible: true, index })} activeOpacity={0.9}>
                 <View style={[tw`rounded-xl overflow-hidden`, { height: 200 }]}>
                   <MapView
+                    ref={ref => { mapRefs.current[index] = ref; }}
                     style={{ flex: 1 }}
                     initialRegion={{
                       latitude: envio.coordenadas_origen?.[0] || -17.7833,
@@ -563,7 +601,7 @@ export default function SeguimientoEnvio() {
                         pinColor="green"
                       />
                     )}
-                    
+
                     {/* Marcador de destino */}
                     {envio.coordenadas_destino && (
                       <Marker
@@ -606,8 +644,8 @@ export default function SeguimientoEnvio() {
 
                     {renderCamionMarker(index)}
                   </MapView>
-                  
-                    {/* Indicador de carga de ruta */}
+
+                  {/* Indicador de carga de ruta */}
                   {cargandoRutas[index] && (
                     <View style={tw`absolute bottom-2 right-2 bg-white rounded-full p-2 shadow-md`}>
                       <ActivityIndicator size="small" color="#0077b6" />
@@ -619,11 +657,11 @@ export default function SeguimientoEnvio() {
 
             {/* Código de acceso (centrado debajo del mapa) */}
             {((particion as any)?.codigo_acceso || (envio as any)?.codigo_acceso) ? (
-              <View style={tw`items-center mb-4`}> 
+              <View style={tw`items-center mb-4`}>
                 <Text style={tw`text-base text-black font-bold mb-2`}>Código de acceso</Text>
-                <View style={tw`flex-row items-center justify-center`}> 
+                <View style={tw`flex-row items-center justify-center`}>
                   <Text selectable style={tw`self-start text-lg font-bold text-black py-1 px-3 rounded-md border border-black bg-white`}>{(particion as any)?.codigo_acceso || (envio as any).codigo_acceso}</Text>
-                  <TouchableOpacity onPress={() => handleCopyCodigo((particion as any)?.codigo_acceso || (envio as any).codigo_acceso)} style={tw`ml-3 p-2 bg-white rounded-full border border-gray-200`}> 
+                  <TouchableOpacity onPress={() => handleCopyCodigo((particion as any)?.codigo_acceso || (envio as any).codigo_acceso)} style={tw`ml-3 p-2 bg-white rounded-full border border-gray-200`}>
                     <Ionicons name="copy-outline" size={20} color="#212529" />
                   </TouchableOpacity>
                 </View>
@@ -646,21 +684,21 @@ export default function SeguimientoEnvio() {
                 </Text>
                 <Text style={tw`text-gray-700 mb-1`}>
                   <Text style={tw`font-medium`}>Teléfono: </Text>
-                  {particion.transportista?.telefono ?? '—'}
+                  {particion.transportista?.telefono || '—'}
                 </Text>
                 <Text style={tw`text-gray-700`}>
                   <Text style={tw`font-medium`}>CI: </Text>
-                  {particion.transportista?.ci ?? '—'}
+                  {particion.transportista?.ci || '—'}
                 </Text>
               </View>
             </View>
 
-            {/* Información del Vehículo */}
+            {/* Información del Vehículo Combinada */}
             <View style={tw`mb-6`}>
               <View style={tw`flex-row items-center mb-3`}>
                 <Ionicons name="car-outline" size={20} color="#0140CD" />
                 <Text style={tw`text-lg font-semibold text-gray-800 ml-2`}>
-                  Vehículo
+                  Vehículo y Transporte
                 </Text>
               </View>
               <View style={tw`bg-gray-50 p-4 rounded-xl`}>
@@ -668,30 +706,16 @@ export default function SeguimientoEnvio() {
                   <Text style={tw`font-medium`}>Placa: </Text>
                   {particion.vehiculo?.placa || '—'}
                 </Text>
-                <Text style={tw`text-gray-700`}>
-                  <Text style={tw`font-medium`}>Tipo: </Text>
-                  {particion.vehiculo?.tipo || '—'}
-                </Text>
-              </View>
-            </View>
-
-            {/* Información del Transporte */}
-            <View style={tw`mb-6`}>
-              <View style={tw`flex-row items-center mb-3`}>
-                <Ionicons name="cube-outline" size={20} color="#0140CD" />
-                <Text style={tw`text-lg font-semibold text-gray-800 ml-2`}>
-                  Transporte
-                </Text>
-              </View>
-              <View style={tw`bg-gray-50 p-4 rounded-xl`}>
                 <Text style={tw`text-gray-700 mb-1`}>
-                  <Text style={tw`font-medium`}>Tipo de transporte: </Text>
-                  {particion.tipoTransporte?.nombre || '—'}
+                  <Text style={tw`font-medium`}>Tipo de Vehículo: </Text>
+                  {particion.vehiculo?.tipo || particion.tipoTransporte?.nombre || '—'}
                 </Text>
-                <Text style={tw`text-gray-700`}>
-                  <Text style={tw`font-medium`}>Descripción: </Text>
-                  {particion.tipoTransporte?.descripcion || '—'}
-                </Text>
+                {particion.vehiculo?.capacidad && (
+                  <Text style={tw`text-gray-700`}>
+                    <Text style={tw`font-medium`}>Capacidad: </Text>
+                    {particion.vehiculo.capacidad} kg
+                  </Text>
+                )}
               </View>
             </View>
 

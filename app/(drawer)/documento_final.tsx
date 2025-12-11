@@ -63,7 +63,7 @@ const DocumentoFinal = () => {
       setLoading(true);
       // Obtener el ID de la asignación - replicando la lógica del JS original
       let asignacionId = params.idAsignacion as string || await AsyncStorage.getItem('idAsignacionSeleccionada');
-      
+
       if (!asignacionId) {
         console.error('❌ No se encontró idAsignacionSeleccionada');
         setError('No se encontró el ID de la asignación');
@@ -86,7 +86,7 @@ const DocumentoFinal = () => {
       const response = await fetch(
         `${getBackendApiBase()}/envios/asignacion/${asignacionId}/documento`,
         {
-          headers: { 
+          headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
@@ -143,11 +143,19 @@ const DocumentoFinal = () => {
 
   const formatearHora = (hora: string | null) => {
     if (!hora) return 'Sin rellenar';
+    // Si viene como HH:MM:SS
+    if (hora.includes(':') && hora.length >= 5 && !hora.includes('T')) {
+      return hora.substring(0, 5);
+    }
+
     try {
-      const horaFormateada = new Date(hora).toLocaleTimeString('es-ES', { 
-        hour: '2-digit', 
+      const date = new Date(hora);
+      if (isNaN(date.getTime())) return hora.substring(0, 5);
+
+      const horaFormateada = date.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
         minute: '2-digit',
-        hour12: true 
+        hour12: true
       });
       return horaFormateada;
     } catch {
@@ -165,7 +173,7 @@ const DocumentoFinal = () => {
 
     try {
       const htmlContent = generarHTMLDocumento(documentoData);
-      
+
       const { uri } = await Print.printToFileAsync({
         html: htmlContent,
         base64: false,
@@ -445,12 +453,12 @@ const DocumentoFinal = () => {
           </Text>
         </View>
       )}
-      
+
       {/* Headers */}
       <View style={tw`flex-row bg-white border border-gray-800 border-b-0`}>
         {headers.map((header, index) => (
-          <View 
-            key={index} 
+          <View
+            key={index}
             style={tw`${widths ? widths[index] : 'flex-1'} border-r border-gray-800 ${index === headers.length - 1 ? 'border-r-0' : ''}`}
           >
             <Text style={tw`text-center font-bold text-gray-900 py-2 px-2 text-xs`}>
@@ -459,13 +467,13 @@ const DocumentoFinal = () => {
           </View>
         ))}
       </View>
-      
+
       {/* Rows */}
       {rows.map((row, rowIndex) => (
         <View key={rowIndex} style={tw`flex-row bg-white border border-gray-800 ${rowIndex === rows.length - 1 ? '' : 'border-b-0'}`}>
           {row.map((cell, cellIndex) => (
-            <View 
-              key={cellIndex} 
+            <View
+              key={cellIndex}
               style={tw`${widths ? widths[cellIndex] : 'flex-1'} border-r border-gray-800 ${cellIndex === row.length - 1 ? 'border-r-0' : ''}`}
             >
               <Text style={tw`text-center text-gray-700 py-2 px-2 text-xs`}>
@@ -492,7 +500,7 @@ const DocumentoFinal = () => {
       <View style={tw`flex-1 justify-center items-center bg-white p-4`}>
         <Ionicons name="alert-circle-outline" size={48} color="#dc3545" />
         <Text style={tw`text-red-600 text-lg mt-2 text-center`}>{error}</Text>
-        <Pressable 
+        <Pressable
           style={tw`mt-4 bg-blue-500 px-6 py-3 rounded-lg`}
           onPress={volverAParticiones}
         >
@@ -506,7 +514,7 @@ const DocumentoFinal = () => {
     return (
       <View style={tw`flex-1 justify-center items-center bg-white p-4`}>
         <Text style={tw`text-gray-600 text-lg`}>No hay datos disponibles</Text>
-        <Pressable 
+        <Pressable
           style={tw`mt-4 bg-blue-500 px-6 py-3 rounded-lg`}
           onPress={volverAParticiones}
         >
@@ -521,19 +529,19 @@ const DocumentoFinal = () => {
       {/* Header Fijo */}
       <View style={tw`bg-white border-b border-gray-300 px-6 pt-12 pb-4`}>
         <View style={tw`flex-row items-center justify-between mb-1`}>
-          <Pressable 
+          <Pressable
             style={tw`p-2`}
             onPress={volverAParticiones}
           >
-            <Ionicons name="arrow-back" size={24} color="#007bff" />
+            <Ionicons name="arrow-back" size={24} color="#212529" />
           </Pressable>
-          
+
           <View style={tw`flex-1 items-center`}>
-            <Text style={tw`text-lg font-medium text-[#007bff]`}>
+            <Text style={tw`text-lg font-medium text-[#212529]`}>
               Documentos de Clientes
             </Text>
           </View>
-          
+
           <View style={tw`w-10`} />
         </View>
       </View>
@@ -650,7 +658,7 @@ const DocumentoFinal = () => {
                 />
               </View>
             )}
-            
+
             {/* Línea de firma */}
             <View style={tw`w-60 border-t-2 border-black mb-3`} />
             <Text style={tw`text-sm font-semibold text-gray-800`}>
@@ -667,16 +675,16 @@ const DocumentoFinal = () => {
             disabled={generandoPDF}
           >
             {generandoPDF && (
-              <ActivityIndicator 
-                size="small" 
-                color="#FFFFFF" 
+              <ActivityIndicator
+                size="small"
+                color="#FFFFFF"
                 style={tw`mr-2`}
               />
             )}
-            <Ionicons 
-              name="download" 
-              size={16} 
-              color="#FFFFFF" 
+            <Ionicons
+              name="download"
+              size={16}
+              color="#FFFFFF"
               style={tw`mr-2`}
             />
             <Text style={tw`text-white font-bold text-center`}>

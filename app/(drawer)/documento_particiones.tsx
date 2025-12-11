@@ -44,7 +44,7 @@ const DocumentoParticiones = () => {
     try {
       // Obtener el ID del envío de los parámetros o AsyncStorage
       const envioId = params.idEnvio as string || await AsyncStorage.getItem('idEnvioSeleccionado');
-      
+
       if (!envioId) {
         setError('No se encontró el ID del envío');
         setLoading(false);
@@ -78,7 +78,7 @@ const DocumentoParticiones = () => {
       const response = await fetch(
         `${getBackendApiBase()}/envios/${envioId}`,
         {
-          headers: { 
+          headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
@@ -108,7 +108,7 @@ const DocumentoParticiones = () => {
 
   const onRefresh = async () => {
     if (!idEnvio) return;
-    
+
     setRefreshing(true);
     await cargarParticiones(idEnvio, true);
     setRefreshing(false);
@@ -118,7 +118,7 @@ const DocumentoParticiones = () => {
     try {
       // Guardar el ID de la asignación para el documento final
       await AsyncStorage.setItem('idAsignacionSeleccionada', idAsignacion.toString());
-      
+
       // Navegar al documento final
       router.push({
         pathname: '/documento_final',
@@ -147,7 +147,7 @@ const DocumentoParticiones = () => {
 
   const getEstadoBadge = (estado: string) => {
     const estadoLower = estado.toLowerCase();
-    
+
     if (estadoLower.includes('entregado')) {
       return { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200' };
     }
@@ -217,7 +217,7 @@ const DocumentoParticiones = () => {
       <View style={tw`flex-1 justify-center items-center bg-white p-4`}>
         <Ionicons name="alert-circle-outline" size={48} color="#dc3545" />
         <Text style={tw`text-red-600 text-lg mt-2 text-center`}>{error}</Text>
-        <Pressable 
+        <Pressable
           style={tw`mt-4 bg-blue-500 px-6 py-3 rounded-lg`}
           onPress={volverADocumentos}
         >
@@ -232,19 +232,19 @@ const DocumentoParticiones = () => {
       {/* Header Fijo */}
       <View style={tw`bg-white border-b border-gray-200 px-4 pt-12 pb-4`}>
         <View style={tw`flex-row items-center justify-between mb-1`}>
-          <Pressable 
+          <Pressable
             style={tw`p-2`}
             onPress={volverADocumentos}
           >
-            <Ionicons name="arrow-back" size={24} color="#007bff" />
+            <Ionicons name="arrow-back" size={24} color="#212529" />
           </Pressable>
-          
+
           <View style={tw`flex-1 items-center`}>
-            <Text style={tw`text-lg font-bold text-[#007bff]`}>
+            <Text style={tw`text-lg font-bold text-[#212529]`}>
               Particiones del Envío
             </Text>
           </View>
-          
+
           <View style={tw`w-10`} />
         </View>
       </View>
@@ -255,22 +255,22 @@ const DocumentoParticiones = () => {
           {/* Título */}
           <View style={tw`p-4 pb-3`}>
             <View style={tw`flex-row items-center justify-between mb-1`}>
-              <Text style={tw`text-lg font-bold text-[#007bff]`}>
+              <Text style={tw`text-lg font-bold text-[#212529]`}>
                 Lista de Particiones
               </Text>
               <View style={tw`flex-row items-center`}>
                 {refreshing && (
-                  <ActivityIndicator size="small" color="#007bff" style={tw`mr-2`} />
+                  <ActivityIndicator size="small" color="#212529" style={tw`mr-2`} />
                 )}
                 <Pressable
                   onPress={onRefresh}
                   disabled={refreshing}
                   style={tw`p-1 rounded ${refreshing ? 'opacity-50' : ''}`}
                 >
-                  <Ionicons 
-                    name="refresh" 
-                    size={20} 
-                    color="#007bff" 
+                  <Ionicons
+                    name="refresh"
+                    size={20}
+                    color="#212529"
                   />
                 </Pressable>
               </View>

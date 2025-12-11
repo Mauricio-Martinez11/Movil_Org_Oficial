@@ -40,15 +40,15 @@ export default function EnvioScreen() {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem('token');
-      if (!token) { 
-        setEnviosCliente([]); 
-        return; 
+      if (!token) {
+        setEnviosCliente([]);
+        return;
       }
-      
+
       const res = await fetch(`${getBackendApiBase()}/envios/mis-envios`, {
         method: 'GET',
-        headers: { 
-          Authorization: `Bearer ${token}` 
+        headers: {
+          Authorization: `Bearer ${token}`
         },
       });
 
@@ -73,7 +73,7 @@ export default function EnvioScreen() {
         const raw = await AsyncStorage.getItem('usuario');
         const parsed = raw ? JSON.parse(raw) : {};
         setUsuario({ nombre: parsed.nombre || 'Usuario' });
-        
+
         // Cliente inicia en "curso"
         setFiltroActual('curso');
         await fetchEnviosCliente();
@@ -118,11 +118,11 @@ export default function EnvioScreen() {
   const getEstadoColor = (estado: string) => {
     switch (estado) {
       case 'Pendiente':
-        return '#EAB308'; // yellow
+        return '#F59E0B'; // amber-500
       case 'Asignado':
-        return '#8B5CF6'; // purple
+        return '#EAB308'; // yellow-500 (Requested: "amarillo")
       case 'En curso':
-        return '#3B82F6'; // blue
+        return '#38BDF8'; // sky-400 (Requested: "celeste clarito")
       case 'Entregado':
         return '#10B981'; // green
       default:
@@ -143,16 +143,17 @@ export default function EnvioScreen() {
       <TouchableOpacity
         // Card container: modifica estilos aquí
         style={[
-          tw`bg-white mx-4 rounded-xl p-4 shadow`,
-          { 
+          tw`bg-white mx-4 rounded-xl p-4 shadow justify-between`,
+          {
             // Borde izquierdo del card (color principal visible en la lista)
-            borderLeftWidth: 4, 
-            borderLeftColor: '#007bff', // <-- cambiar este color según el estado o tema
+            borderLeftWidth: 4,
+            borderLeftColor: getEstadoColor(item.estado), // Usar color dinámico basado en estado
             shadowColor: '#000',
             shadowOpacity: 0.1,
             shadowOffset: { width: 0, height: 2 },
             shadowRadius: 4,
-            elevation: 3
+            elevation: 3,
+            height: 160 // Altura aumentada para acomodar nuevas líneas
           }
         ]}
         onPress={async () => {
@@ -161,21 +162,49 @@ export default function EnvioScreen() {
           router.push('/seguimiento_envio');
         }}
       >
-        <View style={tw`flex-row items-center mb-2`}>
-          {/* Icono del envío: cambia color o icono aquí */}
-          <Ionicons name="cube-outline" size={24} color="#007bff" />
-          <Text style={tw`text-gray-800 text-lg font-semibold ml-2`}>
-            Envío N.º {item.id}
-          </Text>
+        <View>
+          <View style={tw`flex-row items-center mb-3`}>
+            {/* Icono del envío: cambia color o icono aquí */}
+            <Ionicons name="cube-outline" size={24} color={getEstadoColor(item.estado)} />
+            <Text style={tw`text-gray-800 text-lg font-semibold ml-2`}>
+              Envío N.º {item.id}
+            </Text>
+          </View>
+
+          <View style={tw`mb-2`}>
+            <View style={tw`flex-row items-center mb-1`}>
+              <Ionicons name="location-outline" size={14} color="#6B7280" style={tw`mr-1`} />
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={tw`text-gray-600 text-sm flex-1`}
+              >
+                {item.nombre_origen || 'Origen no disponible'}
+              </Text>
+            </View>
+            <View style={tw`flex-row items-center`}>
+              <Ionicons name="flag-outline" size={14} color="#6B7280" style={tw`mr-1`} />
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={tw`text-gray-600 text-sm flex-1`}
+              >
+                {item.nombre_destino || 'Destino no disponible'}
+              </Text>
+            </View>
+          </View>
         </View>
-        <Text style={tw`text-gray-500 text-sm mb-3`}>
-          {item.nombre_origen || 'Origen'} → {item.nombre_destino || 'Destino'} ▪︎ {formatearFecha(item.fecha_recogida)}
-        </Text>
-        {/* Badge de estado: el fondo define el color del estado mostrado */}
-        <View style={tw`self-start rounded-xl overflow-hidden`}>
-          <Text style={tw`text-white py-1 px-3 text-xs bg-[#007bff]`}>
-            {item.estado}
+
+        <View style={tw`flex-row justify-between items-center mt-1`}>
+          <Text style={tw`text-gray-400 text-xs`}>
+            {formatearFecha(item.fecha_recogida)}
           </Text>
+          {/* Badge de estado: el fondo define el color del estado mostrado */}
+          <View style={tw`rounded-xl overflow-hidden`}>
+            <Text style={[tw`text-white py-1 px-3 text-xs`, { backgroundColor: getEstadoColor(item.estado) }]}>
+              {item.estado}
+            </Text>
+          </View>
         </View>
       </TouchableOpacity>
     </View>
@@ -184,11 +213,11 @@ export default function EnvioScreen() {
   return (
     <View style={tw`flex-1 bg-gray-100`}>
       <StatusBar barStyle="dark-content" />
-      
+
       {/* Header */}
       <View style={tw`flex-row items-center pt-14 px-4 pb-4 bg-white`}>
         <TouchableOpacity onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
-          <Ionicons name="menu" size={28} color="#212529" /> 
+          <Ionicons name="menu" size={28} color="#212529" />
         </TouchableOpacity>
         <View style={tw`flex-1 items-center`}>
           <Text style={tw`text-xl font-bold text-[#212529]`}>
@@ -208,7 +237,7 @@ export default function EnvioScreen() {
             En Curso
           </Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={tw`px-3 py-1.5 mx-1 ${filtroActual === 'anteriores' ? 'border border-[#212529] rounded-full' : ''}`}
           onPress={() => setFiltroActual('anteriores')}
@@ -217,7 +246,7 @@ export default function EnvioScreen() {
             Anteriores
           </Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={tw`px-3 py-1.5 mx-1 ${filtroActual === 'pendientes' ? 'border border-[#212529] rounded-full' : ''}`}
           onPress={() => setFiltroActual('pendientes')}
@@ -244,10 +273,10 @@ export default function EnvioScreen() {
           renderItem={renderEnvioCliente}
           contentContainerStyle={tw`pt-2 pb-6`}
           refreshControl={
-            <RefreshControl 
-              refreshing={refreshing} 
-              onRefresh={onRefresh} 
-              colors={['#007bff']} 
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#007bff']}
             />
           }
         />
